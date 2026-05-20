@@ -1,0 +1,3068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>J's Meds</title>
+<style>
+/* =============================================
+   DESIGN TOKENS
+   ============================================= */
+:root {
+  --bg:              #EDE9F8;
+  --surface:         #FFFFFF;
+  --surface2:        #F5F2FC;
+  --primary:         #6B52AA;
+  --primary-light:   #EDE8F8;
+  --primary-dark:    #4E3A88;
+
+  --morning:         #C07A00;
+  --morning-bg:      #FFF7E0;
+  --morning-border:  #E8A020;
+  --morning-dot:     #E8A020;
+
+  --afternoon:       #1E7A63;
+  --afternoon-bg:    #E4F6F1;
+  --afternoon-border:#38A88C;
+  --afternoon-dot:   #38A88C;
+
+  --evening:         #4A3C8E;
+  --evening-bg:      #ECEAF8;
+  --evening-border:  #7060C0;
+  --evening-dot:     #7060C0;
+
+  --asneeded:        #B84A10;
+  --asneeded-bg:     #FFF0E6;
+  --asneeded-border: #E06030;
+  --asneeded-dot:    #E06030;
+
+  --ready-color:     #1A8A50;
+  --ready-bg:        #E8F8F0;
+  --ready-border:    #4DC880;
+  --wait-color:      #C0302A;
+  --wait-bg:         #FFF0F0;
+  --wait-border:     #E86060;
+  --max-color:       #9A5800;
+  --max-bg:          #FFF5E0;
+  --max-border:      #E0A030;
+
+  --text:            #1A162C;
+  --text2:           #52487A;
+  --text3:           #9890B8;
+  --border:          #DDD8F0;
+
+  --done-opacity:    0.38;
+  --radius:          20px;
+  --radius-sm:       12px;
+  --shadow:          0 4px 24px rgba(80,60,160,0.13);
+  --shadow-sm:       0 2px 10px rgba(80,60,160,0.08);
+  --nav-h:           0px;
+  --databar-h:       0px;
+}
+
+/* =============================================
+   RESET & BASE
+   ============================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html { height: 100%; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+  background: #D8D0F0;
+  color: var(--text);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#app {
+  width: 100%;
+  max-width: 620px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* =============================================
+   HEADER
+   ============================================= */
+.app-header {
+  background: linear-gradient(135deg, #5B43A0 0%, #8060C8 100%);
+  color: #fff;
+  padding: 14px 18px 13px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 18px rgba(60,40,140,0.28);
+  z-index: 50;
+}
+
+.header-row1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 11px;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.header-date-chip {
+  font-size: 12px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 20px;
+  padding: 3px 10px;
+  opacity: 0.92;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.28); }
+
+.header-row2 {
+  display: flex;
+  gap: 9px;
+}
+
+.header-action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.16);
+  border: 1.5px solid rgba(255,255,255,0.32);
+  color: #fff;
+  border-radius: 24px;
+  padding: 11px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.1px;
+}
+.header-action-btn:hover { background: rgba(255,255,255,0.28); }
+.header-action-btn .btn-icon { font-size: 15px; }
+
+/* =============================================
+   NAVIGATION
+   ============================================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 620px;
+  height: var(--nav-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  box-shadow: 0 -3px 18px rgba(80,60,160,0.1);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 14px;
+  font-weight: 600;
+  gap: 6px;
+  padding: 10px 0 12px;
+  transition: color 0.15s;
+}
+.nav-btn .ni { font-size: 28px; transition: transform 0.15s; }
+
+/* Hide Day and Calendar nav — keep only Homescreen and Doses */
+#nav-day, #nav-calendar { display: none; }
+.nav-btn.active { color: var(--primary); }
+.nav-btn.active .ni { transform: translateY(-2px); }
+
+/* Data bar (export/import) */
+.data-bar {
+  position: fixed;
+  bottom: var(--nav-h);
+  width: 100%;
+  max-width: 620px;
+  height: var(--databar-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  z-index: 90;
+  box-shadow: 0 -2px 10px rgba(80,60,160,0.06);
+}
+
+.data-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.data-btn:hover { background: var(--primary-light); }
+
+/* =============================================
+   VIEW SCAFFOLD
+   ============================================= */
+.view {
+  display: none;
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 15px calc(var(--nav-h) + var(--databar-h) + 16px);
+  -webkit-overflow-scrolling: touch;
+}
+.view.active { display: block; }
+
+/* =============================================
+   CARDS VIEW — header strip
+   ============================================= */
+.cards-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.cards-top-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.today-jump-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.today-jump-btn:hover { background: var(--primary-dark); }
+
+/* =============================================
+   DATE SEPARATOR — between day groups in Cards
+   ============================================= */
+.date-sep {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 12px;
+}
+.date-sep:first-child { margin-top: 0; }
+
+.date-sep-line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.date-sep-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text2);
+  white-space: nowrap;
+  padding: 4px 10px;
+  background: var(--surface);
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  letter-spacing: 0.1px;
+}
+
+/* Today's separator is purple and prominent */
+.date-sep.is-today .date-sep-label {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 10px rgba(107,82,170,0.35);
+}
+.date-sep.is-today .date-sep-line {
+  background: var(--primary);
+  opacity: 0.4;
+}
+
+/* Past day separators are faded */
+.date-sep.is-past .date-sep-label {
+  color: var(--text3);
+  border-color: var(--border);
+}
+.date-sep.is-past .date-sep-line { opacity: 0.5; }
+
+/* =============================================
+   EVENT CARD
+   ============================================= */
+.event-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  border: 2.5px solid transparent;
+  overflow: hidden;
+  transition: opacity 0.35s ease, border-color 0.2s;
+}
+
+.event-card.status-current {
+  border-color: var(--morning-border);
+  background: #FFFCF0;
+  box-shadow: 0 6px 28px rgba(230,150,30,0.22);
+}
+.event-card.status-upnext {
+  border-color: var(--afternoon-border);
+  background: #F0FAF7;
+  box-shadow: 0 6px 28px rgba(50,160,130,0.18);
+}
+.event-card.status-done {
+  opacity: var(--done-opacity);
+}
+
+/* Card header stripe */
+.card-header {
+  padding: 18px 18px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,0.055);
+}
+.period-morning  .card-header { background: var(--morning-bg); }
+.period-afternoon .card-header { background: var(--afternoon-bg); }
+.period-evening  .card-header { background: var(--evening-bg); }
+
+.card-period-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.period-emoji    { font-size: 30px; }
+.period-name     { font-size: 22px; font-weight: 800; }
+.period-timerange { font-size: 14px; color: var(--text2); margin-top: 3px; }
+
+.badge-row { display: flex; gap: 6px; align-items: center; }
+
+.badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.badge-current  { background: var(--morning-border);   color: #fff; }
+.badge-upnext   { background: var(--afternoon-border); color: #fff; }
+.badge-done     { background: #E0DBEE; color: #8880AA; }
+
+/* Card body */
+.card-body { padding: 18px 18px 14px; }
+
+.med-list { display: flex; flex-direction: column; gap: 16px; }
+
+.med-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.med-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.med-info { flex: 1; min-width: 0; }
+
+/* Med name row — name + status chip inline */
+.med-name-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.med-name   { font-size: 18px; font-weight: 700; color: var(--text); }
+.med-detail { font-size: 14px; color: var(--text2); margin-top: 2px; }
+.med-alert  {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--asneeded);
+  font-style: italic;
+  margin-top: 4px;
+  background: var(--asneeded-bg);
+  border-radius: 6px;
+  padding: 3px 9px;
+}
+
+/* =============================================
+   INLINE STATUS CHIP (Card View med rows)
+   ============================================= */
+.med-status-chip {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+.chip-ready   { background: var(--ready-bg);  color: var(--ready-color); border-color: var(--ready-border); }
+.chip-waiting { background: var(--wait-bg);   color: var(--wait-color);  border-color: var(--wait-border); }
+.chip-maxed   { background: var(--max-bg);    color: var(--max-color);   border-color: var(--max-border); }
+
+/* Countdown line below med detail in Card View */
+.med-countdown-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.cd-ready   { font-size: 13px; color: var(--ready-color); font-weight: 600; }
+.cd-waiting { font-size: 13px; color: var(--wait-color);  font-weight: 700; }
+.cd-maxed   { font-size: 13px; color: var(--max-color);   font-weight: 700; }
+.med-daily-count { font-size: 12px; color: var(--text3); font-weight: 600; }
+
+/* As-Needed section inside card */
+.asneeded-section {
+  margin-top: 13px;
+  padding-top: 11px;
+  border-top: 1.5px dashed var(--asneeded-border);
+}
+.asneeded-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 9px;
+}
+.asneeded-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--asneeded);
+}
+.asneeded-item {
+  background: var(--asneeded-bg);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--asneeded-border);
+}
+.asneeded-item:last-child { margin-bottom: 0; }
+
+.asneeded-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.asneeded-name   { font-size: 13px; font-weight: 700; }
+.asneeded-detail { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.asneeded-note   { font-size: 11px; color: var(--asneeded); font-style: italic; margin-top: 2px; }
+
+/* =============================================
+   CARD FOOTER (done + notes)
+   ============================================= */
+.card-footer { padding: 0 18px 18px; }
+.footer-divider { height: 1px; background: var(--border); margin-bottom: 14px; }
+
+.footer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.done-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+.done-box {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  border: 2px solid var(--border);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  flex-shrink: 0;
+}
+.done-box.on {
+  background: #45B87A;
+  border-color: #45B87A;
+  box-shadow: 0 2px 8px rgba(69,184,122,0.4);
+}
+.done-box.on::after {
+  content: '✓';
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+}
+.done-text { font-size: 17px; font-weight: 600; color: var(--text2); }
+
+.note-toggle-btn {
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--primary);
+  background: var(--primary-light);
+  border: none;
+  border-radius: 20px;
+  padding: 9px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.note-toggle-btn:hover { background: #DDD7F5; }
+
+/* =============================================
+   NOTE LOG  (timestamped medical entries)
+   ============================================= */
+.note-log {
+  margin-top: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.note-entry {
+  background: var(--surface2);
+  border-radius: 11px;
+  padding: 9px 12px;
+  border-left: 3px solid var(--primary-light);
+}
+
+.note-ts {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text3);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.note-ts::before { content: '🕐'; font-size: 10px; }
+
+.note-body {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+/* New-entry editor */
+.note-editor { margin-top: 10px; }
+
+.note-editor-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 5px;
+}
+
+.note-ta {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  resize: vertical;
+  min-height: 72px;
+  outline: none;
+  background: var(--surface2);
+  transition: border-color 0.15s;
+  line-height: 1.5;
+}
+.note-ta:focus { border-color: var(--primary); }
+
+.note-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 7px;
+}
+.note-save-btn {
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.note-save-btn:hover { background: var(--primary-dark); }
+.note-cancel-btn {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+/* =============================================
+   SCHEDULE NOTE BANNER (day-level)
+   ============================================= */
+.schedule-note-banner {
+  background: #FFF8E8;
+  border: 1.5px solid #F0C060;
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  color: #7A5500;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  line-height: 1.5;
+}
+
+/* =============================================
+   EMPTY STATE
+   ============================================= */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text3);
+}
+.empty-icon { font-size: 44px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; font-weight: 500; }
+
+/* =============================================
+   CALENDAR VIEW
+   ============================================= */
+.cal-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cal-month-title { font-size: 20px; font-weight: 800; }
+
+.arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.arrow-btn:hover { background: var(--primary-light); }
+
+.cal-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--primary-light);
+  padding: 6px 0;
+}
+.cal-wd {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cal-cell {
+  min-height: 60px;
+  padding: 6px 3px 5px;
+  border-right: 1px solid var(--bg);
+  border-bottom: 1px solid var(--bg);
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cal-cell.has-data { cursor: pointer; }
+.cal-cell.has-data:hover { background: var(--primary-light); }
+.cal-cell.dim { opacity: 0.28; pointer-events: none; }
+
+.cal-num {
+  font-size: 13px;
+  font-weight: 600;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+.cal-cell.today .cal-num {
+  background: var(--primary);
+  color: white;
+  font-weight: 800;
+}
+.cal-cell.selected:not(.today) .cal-num {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.cal-dots {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 36px;
+}
+.cdot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+.cdot.faded { opacity: 0.3; }
+
+/* Calendar legend */
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  padding: 4px 2px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+/* =============================================
+   DAY VIEW
+   ============================================= */
+.day-view-header {
+  margin-bottom: 16px;
+}
+.day-view-date {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.day-view-label {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 3px;
+}
+
+/* =============================================
+   MED VIEW
+   ============================================= */
+.med-view-topbar {
+  margin-bottom: 16px;
+}
+.med-view-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.med-view-sub {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+/* Section headers within Med View */
+.med-section-header {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 8px;
+}
+.med-section-header:first-of-type { margin-top: 0; }
+.med-section-header::before,
+.med-section-header::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* Med Tracker Card */
+.med-tracker-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+.med-tracker-card.card-ready   { border-color: var(--ready-border); }
+.med-tracker-card.card-waiting { border-color: var(--wait-border); }
+.med-tracker-card.card-maxed   { border-color: var(--max-border); }
+
+.mtc-header {
+  padding: 12px 14px 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.mtc-name-col { flex: 1; min-width: 0; }
+.mtc-name { font-size: 15px; font-weight: 800; color: var(--text); }
+.mtc-dose-info { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.mtc-status-badge {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 11px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: 1.5px solid transparent;
+}
+.mtc-badge-ready   { background: var(--ready-bg);  color: var(--ready-color); border-color: var(--ready-border); }
+.mtc-badge-waiting { background: var(--wait-bg);   color: var(--wait-color);  border-color: var(--wait-border); }
+.mtc-badge-maxed   { background: var(--max-bg);    color: var(--max-color);   border-color: var(--max-border); }
+
+.mtc-body { padding: 13px 14px 14px; }
+
+.mtc-countdown {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.mtc-cd-ready   { color: var(--ready-color); }
+.mtc-cd-waiting { color: var(--wait-color); }
+.mtc-cd-maxed   { color: var(--max-color); }
+
+.mtc-daily-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.mtc-daily-text {
+  font-size: 12px;
+  color: var(--text2);
+  white-space: nowrap;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.mtc-progress {
+  flex: 1;
+  height: 7px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mtc-progress-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s;
+}
+.bar-safe { background: var(--ready-border); }
+.bar-warn { background: var(--max-border); }
+.bar-full { background: var(--wait-border); }
+
+.mtc-last-dose {
+  font-size: 12px;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+
+.mtc-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.btn-log-now {
+  flex: 2;
+  padding: 11px 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+}
+.btn-log-now:hover { background: var(--primary-dark); }
+
+.btn-set-time {
+  flex: 1;
+  padding: 11px 10px;
+  background: var(--surface2);
+  color: var(--primary);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: center;
+}
+.btn-set-time:hover { background: var(--primary-light); }
+
+/* Manual time entry */
+.mtc-manual {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 11px 12px;
+  margin-top: 10px;
+  border: 1.5px solid var(--border);
+}
+.mtc-manual-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 7px;
+}
+.mtc-dt-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: white;
+  margin-bottom: 9px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.mtc-dt-input:focus { border-color: var(--primary); }
+.mtc-manual-btns { display: flex; gap: 7px; }
+.btn-manual-save {
+  flex: 2;
+  padding: 8px 12px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-manual-save:hover { background: var(--primary-dark); }
+.btn-manual-cancel {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--surface);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Dose history */
+.mtc-history {
+  border-top: 1px solid var(--border);
+  padding: 10px 14px 12px;
+}
+.mtc-history-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+.dose-log-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 12px;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.dose-log-entry:last-child { border-bottom: none; }
+.dose-log-time { font-weight: 700; color: var(--text); }
+.dose-log-ago  { font-size: 11px; color: var(--text3); margin-left: 6px; }
+.dose-log-undo {
+  font-size: 11px;
+  color: var(--wait-color);
+  cursor: pointer;
+  background: var(--wait-bg);
+  border: 1px solid var(--wait-border);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+.dose-log-undo:hover { background: #FFD8D8; }
+
+/* =============================================
+   TOAST
+   ============================================= */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + var(--databar-h) + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(26,22,44,0.88);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =============================================
+   PULSE ANIMATION
+   ============================================= */
+@keyframes pulse-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(107,82,170,0.5); }
+  60%  { box-shadow: 0 0 0 10px rgba(107,82,170,0.1); }
+  100% { box-shadow: 0 0 0 0 rgba(107,82,170,0); }
+}
+.pulse { animation: pulse-glow 0.9s ease; }
+
+/* =============================================
+   MED MODAL (bottom sheet)
+   ============================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,22,44,0.55);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-panel {
+  width: 100%;
+  max-width: 620px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg);
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 -8px 40px rgba(50,30,120,0.22);
+  transform: translateY(30px);
+  transition: transform 0.26s ease;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 36px;
+}
+.modal-overlay.open .modal-panel {
+  transform: translateY(0);
+}
+.modal-drag-bar {
+  width: 44px; height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  margin: 14px auto 0;
+}
+.modal-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-hdr-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+.modal-close-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.modal-close-btn:hover { background: var(--border); }
+#modal-body { padding: 16px; }
+
+/* =============================================
+   LOG MODAL (centered dialog)
+   ============================================= */
+.log-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,22,44,0.6);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+}
+.log-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.log-panel {
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: 0 16px 60px rgba(50,30,120,0.32);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.96);
+  transition: transform 0.22s ease;
+}
+.log-overlay.open .log-panel {
+  transform: scale(1);
+}
+.log-hdr {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #5B43A0 0%, #8060C8 100%);
+  color: #fff;
+}
+.log-hdr-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+.log-hdr-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 2px;
+}
+.log-close-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.log-close-btn:hover { background: rgba(255,255,255,0.28); }
+.log-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--surface2);
+}
+.log-textarea {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  color: var(--text);
+  resize: none;
+  outline: none;
+}
+.log-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.log-copy-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--primary-light);
+  color: var(--primary);
+  transition: background 0.15s;
+}
+.log-copy-btn:hover { background: #DDD7F5; }
+.log-save-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: var(--primary);
+  color: white;
+  transition: background 0.15s;
+}
+.log-save-btn:hover { background: var(--primary-dark); }
+
+/* =============================================
+   CLICKABLE MED ROWS
+   ============================================= */
+.med-row-clickable {
+  cursor: pointer;
+  transition: opacity 0.1s;
+  user-select: none;
+}
+.med-row-clickable:active { opacity: 0.6; }
+.med-row-chevron {
+  font-size: 26px;
+  color: var(--primary);
+  flex-shrink: 0;
+  align-self: center;
+  opacity: 0.5;
+  line-height: 1;
+  padding-left: 8px;
+}
+
+/* =============================================
+   DESKTOP WRAPPER
+   ============================================= */
+@media (min-width: 640px) {
+  body { padding: 24px 0; align-items: flex-start; background: #C8C0E0; }
+  #app {
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 12px 50px rgba(50,30,120,0.28);
+    min-height: calc(100vh - 48px);
+    max-height: calc(100vh - 48px);
+  }
+  .bottom-nav, .data-bar { border-radius: 0 0 28px 28px; }
+  .view { overflow-y: auto; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- =================== HEADER =================== -->
+  <header class="app-header">
+    <div class="header-row1">
+      <div class="header-title">
+        <span>💊</span> J's Meds
+      </div>
+      <div class="header-right">
+        <div class="header-date-chip" id="hdr-date"></div>
+        <button class="icon-btn" id="btn-log" title="Doctor's log">🖨️</button>
+        <button class="icon-btn" id="btn-export" title="Export data">📤</button>
+        <button class="icon-btn" id="btn-import" title="Import data">📥</button>
+        <input type="file" id="file-import" accept=".json" style="display:none">
+      </div>
+    </div>
+    <div class="header-row2">
+      <button class="header-action-btn" id="btn-current">
+        <span class="btn-icon">⏱</span> Current
+      </button>
+      <button class="header-action-btn" id="btn-upnext">
+        <span class="btn-icon">⏭</span> Up Next
+      </button>
+    </div>
+  </header>
+
+  <!-- =================== VIEWS =================== -->
+
+  <!-- CARDS VIEW — all events, chronological scroll -->
+  <div class="view active" id="view-cards">
+    <div class="cards-top-bar">
+      <div class="cards-top-title">Complete Schedule</div>
+      <button class="today-jump-btn" id="btn-today-jump">📍 Jump to Today</button>
+    </div>
+    <div id="cards-content"></div>
+  </div>
+
+
+  <!-- MED DOSE MODAL (bottom sheet) -->
+  <div id="med-modal-overlay" class="modal-overlay" onclick="if(event.target===this)APP.closeMedModal()">
+    <div class="modal-panel">
+      <div class="modal-drag-bar"></div>
+      <div class="modal-hdr">
+        <div class="modal-hdr-title" id="modal-hdr-title"></div>
+        <button class="modal-close-btn" onclick="APP.closeMedModal()">✕</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- DOCTOR'S LOG MODAL (centered dialog) -->
+  <div id="log-overlay" class="log-overlay" onclick="if(event.target===this)APP.closeLogModal()">
+    <div class="log-panel">
+      <div class="log-hdr">
+        <div>
+          <div class="log-hdr-title">🖨️ Doctor's Log</div>
+          <div class="log-hdr-sub">Copy or save to share with your doctor</div>
+        </div>
+        <button class="log-close-btn" onclick="APP.closeLogModal()">✕</button>
+      </div>
+      <div class="log-body">
+        <textarea class="log-textarea" id="log-textarea" readonly spellcheck="false"></textarea>
+      </div>
+      <div class="log-actions">
+        <button class="log-copy-btn" onclick="APP.copyLog()">📋 Copy</button>
+        <button class="log-save-btn" onclick="APP.saveLog()">💾 Save as File</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===============================================================
+     SCRIPT
+     =============================================================== -->
+<script>
+'use strict';
+
+/* -------------------------------------------------------
+   EMBEDDED MEDICATION DATA
+   ------------------------------------------------------- */
+const RAW_SCHEDULE = {
+  "medication_schedule": [
+    {
+      "date": "2026-05-14",
+      "label": "Night of Surgery",
+      "times": {
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "2 tablets (loading dose)", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets", "notes": "Dose 1 of 10" }
+        ]
+      }
+    },
+    {
+      "date": "2026-05-15",
+      "label": "Postop Day 1",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets", "notes": "Dose 2 of 10" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day, first dose at home" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day, first dose at home" }
+        ]
+      }
+    },
+    {
+      "date": "2026-05-16",
+      "label": "Postop Day 2",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets", "notes": "Dose 3 of 10" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date": "2026-05-17",
+      "label": "Postop Day 3",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets", "notes": "Dose 4 of 10" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date": "2026-05-18",
+      "label": "Postop Day 4",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Tranexamic acid", "dose": "1300 mg", "quantity": "2 tablets", "notes": "Dose 5 of 10 — FINAL DOSE" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date": "2026-05-19",
+      "label": "Postop Day 5",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date_range": { "start": "2026-05-20", "end": "2026-05-27" },
+      "label": "Postop Days 6–13",
+      "notes": "May 27: last day of Journavx (14-day course) and Protein supplement (14-day course).",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Journavx", "dose": "50 mg", "quantity": "1 tablet", "notes": "on empty stomach" },
+          { "medication": "Protein supplement", "dose": null, "quantity": "1 serving" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date_range": { "start": "2026-05-28", "end": "2026-06-03" },
+      "label": "Postop Days 14–20",
+      "notes": "June 3: last day of Prednisone (21-day course).",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" },
+          { "medication": "Prednisone", "dose": "5 mg", "quantity": "1 tablet", "notes": "do not take at night" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date_range": { "start": "2026-06-04", "end": "2026-06-12" },
+      "label": "Postop Days 21–29",
+      "notes": "June 12: last day of Aspirin 81 mg (30-day course).",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" },
+          { "medication": "Aspirin", "dose": "81 mg", "quantity": "1 tablet" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    },
+    {
+      "date_range": { "start": "2026-06-13", "end": "2026-06-27" },
+      "label": "Postop Days 30–44",
+      "notes": "June 27: last day of Celebrex (45-day course).",
+      "times": {
+        "morning": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "early_pm": [
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "evening": [
+          { "medication": "Celebrex", "dose": "200 mg", "quantity": "1 capsule" },
+          { "medication": "Tylenol", "dose": "1000 mg", "quantity": "2 tablets" }
+        ],
+        "as_needed": [
+          { "medication": "Gabapentin", "dose": "300 mg", "quantity": "1 capsule", "notes": "every 8 hours, max 3x/day" },
+          { "medication": "Tramadol", "dose": "50 mg", "quantity": "1 tablet", "notes": "every 6 hours, max 4x/day" }
+        ]
+      }
+    }
+  ]
+};
+
+/* -------------------------------------------------------
+   MED RULES — interval and daily max from medication_schedule.json
+   ------------------------------------------------------- */
+const MED_RULES = {
+  'Gabapentin':         { intervalHours: 8,  maxPerDay: 3, dose: '300 mg · 1 capsule',  asNeeded: true  },
+  'Tramadol':           { intervalHours: 6,  maxPerDay: 4, dose: '50 mg · 1 tablet',    asNeeded: true  },
+  'Tylenol':            { intervalHours: 6,  maxPerDay: 4, dose: '1000 mg · 2 tablets', asNeeded: false },
+  'Celebrex':           { intervalHours: 12, maxPerDay: 2, dose: '200 mg · 1 capsule',  asNeeded: false },
+  'Aspirin':            { intervalHours: 24, maxPerDay: 1, dose: '81 mg · 1 tablet',    asNeeded: false },
+  'Journavx':           { intervalHours: 12, maxPerDay: 2, dose: '50 mg · 1 tablet',    asNeeded: false },
+  'Tranexamic acid':    { intervalHours: 12, maxPerDay: 2, dose: '1300 mg · 2 tablets', asNeeded: false },
+  'Prednisone':         { intervalHours: 24, maxPerDay: 1, dose: '5 mg · 1 tablet',     asNeeded: false },
+  'Protein supplement': { intervalHours: 12, maxPerDay: 2, dose: '1 serving',           asNeeded: false }
+};
+
+/* -------------------------------------------------------
+   CONSTANTS
+   ------------------------------------------------------- */
+const PERIODS      = ['morning', 'early_pm', 'evening'];
+const PERIOD_LABEL = { morning: 'Morning', early_pm: 'Afternoon', evening: 'Evening' };
+const PERIOD_EMOJI = { morning: '🌅', early_pm: '☀️', evening: '🌙' };
+const PERIOD_CLASS = { morning: 'period-morning', early_pm: 'period-afternoon', evening: 'period-evening' };
+const PERIOD_RANGE = { morning: '5 AM – 12 PM', early_pm: '12 PM – 5 PM', evening: '5 PM – 5 AM' };
+
+const PERIOD_COLOR = {
+  morning:   'var(--morning-dot)',
+  early_pm:  'var(--afternoon-dot)',
+  evening:   'var(--evening-dot)',
+  as_needed: 'var(--asneeded-dot)'
+};
+const MED_DOT_COLOR = {
+  morning:  'var(--morning-border)',
+  early_pm: 'var(--afternoon-border)',
+  evening:  'var(--evening-border)'
+};
+const MONTH_NAMES = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+
+/* -------------------------------------------------------
+   DATE HELPERS
+   ------------------------------------------------------- */
+function parseLocal(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function toStr(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function friendlyDate(str) {
+  return parseLocal(str).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric'
+  });
+}
+
+function formatTime(ts) {
+  return new Date(ts).toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', hour12: true
+  });
+}
+
+function formatDateTime(ts) {
+  const d = new Date(ts);
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+  const yesterdayMid = new Date(todayMid); yesterdayMid.setDate(yesterdayMid.getDate() - 1);
+  const tsMid = new Date(ts); tsMid.setHours(0,0,0,0);
+
+  if (tsMid.getTime() === todayMid.getTime()) return `Today ${time}`;
+  if (tsMid.getTime() === yesterdayMid.getTime()) return `Yesterday ${time}`;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + time;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return 'Ready now';
+  const totalMin = Math.ceil(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0 && m > 0) return `${h}h ${m}m`;
+  if (h > 0) return `${h}h`;
+  return `${m}m`;
+}
+
+function formatAgo(ts) {
+  const mins = Math.floor((Date.now() - ts) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (m === 0) return `${h}h ago`;
+  return `${h}h ${m}m ago`;
+}
+
+/* -------------------------------------------------------
+   BUILD FLAT SCHEDULE MAP
+   ------------------------------------------------------- */
+function buildSchedule(raw) {
+  const map = {};
+  for (const entry of raw.medication_schedule) {
+    const data = { label: entry.label, notes: entry.notes || null, times: entry.times };
+    if (entry.date) {
+      map[entry.date] = data;
+    } else if (entry.date_range) {
+      let cur = parseLocal(entry.date_range.start);
+      const end = parseLocal(entry.date_range.end);
+      while (cur <= end) {
+        map[toStr(cur)] = data;
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
+  }
+  return map;
+}
+
+const SCHEDULE = buildSchedule(RAW_SCHEDULE);
+
+/* Sorted list of all scheduled dates */
+const ALL_DATES = Object.keys(SCHEDULE).sort();
+
+/* -------------------------------------------------------
+   STATE
+   ------------------------------------------------------- */
+const TODAY = toStr(new Date());
+
+const state = {
+  view:          'cards',
+  selectedDate:  TODAY,
+  calYear:       new Date().getFullYear(),
+  calMonth:      new Date().getMonth(),
+  eventState:    JSON.parse(localStorage.getItem('jMedsEvents') || '{}'),
+  medDoses:      JSON.parse(localStorage.getItem('jMedDoses')  || '{}'),
+  noteOpen:      {},  // { 'YYYY-MM-DD_period': true }
+  medManualOpen: {}   // { 'MedName': true }
+};
+
+function saveEvents() {
+  localStorage.setItem('jMedsEvents', JSON.stringify(state.eventState));
+}
+
+function saveMedDoses() {
+  localStorage.setItem('jMedDoses', JSON.stringify(state.medDoses));
+}
+
+function evKey(date, period) { return `${date}_${period}`; }
+
+function getEv(date, period) {
+  return state.eventState[evKey(date, period)] || { done: false, notes: [] };
+}
+
+function setDone(date, period, val) {
+  const k = evKey(date, period);
+  if (!state.eventState[k]) state.eventState[k] = { done: false, notes: [] };
+  state.eventState[k].done = val;
+  saveEvents();
+}
+
+/* -------------------------------------------------------
+   MED DOSE TRACKING HELPERS
+   ------------------------------------------------------- */
+function getMedStatus(medName) {
+  const rule = MED_RULES[medName];
+  if (!rule) return null;
+
+  const allDoses = [...(state.medDoses[medName] || [])].sort((a, b) => b - a);
+  const now = Date.now();
+
+  // Count today's doses (calendar day, midnight to midnight)
+  const todayMid = new Date(); todayMid.setHours(0,0,0,0);
+  const dosesToday = allDoses.filter(ts => ts >= todayMid.getTime()).length;
+  const maxReached = dosesToday >= rule.maxPerDay;
+
+  // Interval check (based on last dose ever, not just today)
+  const lastDose = allDoses[0] || null;
+  const msInterval = rule.intervalHours * 60 * 60 * 1000;
+  const msSinceLast = lastDose ? (now - lastDose) : Infinity;
+  const msRemaining = lastDose ? Math.max(0, msInterval - msSinceLast) : 0;
+  const intervalReady = msRemaining === 0;
+
+  const ready = !maxReached && intervalReady;
+
+  return {
+    ready,
+    maxReached,
+    dosesToday,
+    maxPerDay:     rule.maxPerDay,
+    intervalHours: rule.intervalHours,
+    msRemaining,
+    lastDose,
+    allDoses
+  };
+}
+
+/* Generate the status chip HTML for a med (used in Card View) */
+function medStatusChipHtml(medName) {
+  const status = getMedStatus(medName);
+  if (!status) return '';
+
+  let chipClass, chipText;
+  if (status.maxReached) {
+    chipClass = 'chip-maxed'; chipText = '⛔ MAX';
+  } else if (status.ready) {
+    chipClass = 'chip-ready'; chipText = '✓ READY';
+  } else {
+    chipClass = 'chip-waiting'; chipText = '⏱ WAIT';
+  }
+  return `<span class="med-status-chip ${chipClass}" data-status-med="${esc(medName)}">${chipText}</span>`;
+}
+
+/* Generate the countdown line HTML for a med (used in Card View) */
+function medCountdownLineHtml(medName) {
+  const status = getMedStatus(medName);
+  if (!status) return '';
+
+  let cdText, cdClass;
+  if (status.maxReached) {
+    cdText = `Max ${status.maxPerDay}/${status.maxPerDay} doses reached today`;
+    cdClass = 'cd-maxed';
+  } else if (status.msRemaining > 0) {
+    cdText = `Next dose in ${formatCountdown(status.msRemaining)}`;
+    cdClass = 'cd-waiting';
+  } else if (status.lastDose) {
+    cdText = `Ready · Last: ${formatTime(status.lastDose)}`;
+    cdClass = 'cd-ready';
+  } else {
+    cdText = 'Ready · No dose logged yet';
+    cdClass = 'cd-ready';
+  }
+
+  const dailyText = `${status.dosesToday}/${status.maxPerDay} today`;
+
+  return `<div class="med-countdown-line">
+    <span class="${cdClass}" data-countdown-med="${esc(medName)}">${cdText}</span>
+    <span class="med-daily-count">${dailyText}</span>
+  </div>`;
+}
+
+/* Live-update all countdown elements in the DOM without re-rendering */
+function updateCountdowns() {
+  // Card View status chips
+  document.querySelectorAll('[data-status-med]').forEach(el => {
+    const medName = el.dataset.statusMed;
+    const status = getMedStatus(medName);
+    if (!status) return;
+    if (status.maxReached) {
+      el.textContent = '⛔ MAX'; el.className = 'med-status-chip chip-maxed';
+    } else if (status.ready) {
+      el.textContent = '✓ READY'; el.className = 'med-status-chip chip-ready';
+    } else {
+      el.textContent = '⏱ WAIT'; el.className = 'med-status-chip chip-waiting';
+    }
+  });
+
+  // Card View countdown lines
+  document.querySelectorAll('[data-countdown-med]').forEach(el => {
+    const medName = el.dataset.countdownMed;
+    const status = getMedStatus(medName);
+    if (!status) return;
+    if (status.maxReached) {
+      el.textContent = `Max ${status.maxPerDay}/${status.maxPerDay} doses reached today`;
+      el.className = 'cd-maxed';
+    } else if (status.msRemaining > 0) {
+      el.textContent = `Next dose in ${formatCountdown(status.msRemaining)}`;
+      el.className = 'cd-waiting';
+    } else if (status.lastDose) {
+      el.textContent = `Ready · Last: ${formatTime(status.lastDose)}`;
+      el.className = 'cd-ready';
+    } else {
+      el.textContent = 'Ready · No dose logged yet';
+      el.className = 'cd-ready';
+    }
+  });
+
+  // Med View main badges
+  document.querySelectorAll('[data-mtc-badge]').forEach(el => {
+    const medName = el.dataset.mtcBadge;
+    const status = getMedStatus(medName);
+    if (!status) return;
+    const card = document.getElementById(`mtc-${medName.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'')}`);
+    if (status.maxReached) {
+      el.textContent = '⛔ Max Doses Reached';
+      el.className = 'mtc-status-badge mtc-badge-maxed';
+      if (card) { card.className = card.className.replace(/card-(ready|waiting|maxed)/g,'') + ' card-maxed'; }
+    } else if (status.ready) {
+      el.textContent = '✓ Ready to Give';
+      el.className = 'mtc-status-badge mtc-badge-ready';
+      if (card) { card.className = card.className.replace(/card-(ready|waiting|maxed)/g,'') + ' card-ready'; }
+    } else {
+      el.textContent = '⏱ Not Yet Safe';
+      el.className = 'mtc-status-badge mtc-badge-waiting';
+      if (card) { card.className = card.className.replace(/card-(ready|waiting|maxed)/g,'') + ' card-waiting'; }
+    }
+  });
+
+  // Med View countdown text
+  document.querySelectorAll('[data-mtc-countdown]').forEach(el => {
+    const medName = el.dataset.mtcCountdown;
+    const status = getMedStatus(medName);
+    if (!status) return;
+    if (status.maxReached) {
+      el.textContent = `All ${status.maxPerDay} doses given today — resets at midnight`;
+      el.className = 'mtc-countdown mtc-cd-maxed';
+    } else if (status.msRemaining > 0) {
+      el.textContent = `${formatCountdown(status.msRemaining)} until next dose`;
+      el.className = 'mtc-countdown mtc-cd-waiting';
+    } else if (status.lastDose) {
+      el.textContent = 'Safe to give now';
+      el.className = 'mtc-countdown mtc-cd-ready';
+    } else {
+      el.textContent = 'No dose recorded yet — ready to give';
+      el.className = 'mtc-countdown mtc-cd-ready';
+    }
+  });
+
+  // Med View last dose text
+  document.querySelectorAll('[data-mtc-last]').forEach(el => {
+    const medName = el.dataset.mtcLast;
+    const status = getMedStatus(medName);
+    if (!status) return;
+    el.textContent = status.lastDose
+      ? `Last dose: ${formatDateTime(status.lastDose)} (${formatAgo(status.lastDose)})`
+      : 'No doses logged yet';
+  });
+}
+
+/* Run updates every 30 seconds */
+setInterval(updateCountdowns, 30000);
+
+/* -------------------------------------------------------
+   NOTE STORAGE — each entry is { ts, text }
+   ------------------------------------------------------- */
+function getNotesArray(date, period) {
+  const ev = getEv(date, period);
+  const raw = ev.notes;
+  if (!raw) return [];
+  if (typeof raw === 'string') {
+    return raw.trim() ? [{ ts: 'Previously saved', text: raw.trim() }] : [];
+  }
+  return Array.isArray(raw) ? raw : [];
+}
+
+function makeTimestamp() {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-US', {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+  });
+  const time = now.toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', hour12: true
+  });
+  return `${date} · ${time}`;
+}
+
+function appendNote(date, period, text) {
+  const k = evKey(date, period);
+  if (!state.eventState[k]) state.eventState[k] = { done: false, notes: [] };
+  const arr = getNotesArray(date, period);
+  arr.push({ ts: makeTimestamp(), text: text.trim() });
+  state.eventState[k].notes = arr;
+  saveEvents();
+}
+
+/* -------------------------------------------------------
+   CURRENT PERIOD (by clock)
+   ------------------------------------------------------- */
+function currentPeriod() {
+  const h = new Date().getHours();
+  if (h >= 5  && h < 12) return 'morning';
+  if (h >= 12 && h < 17) return 'early_pm';
+  return 'evening';
+}
+
+/* -------------------------------------------------------
+   ORDERED EVENT LIST — all (date, period) pairs in order
+   ------------------------------------------------------- */
+function buildEventList() {
+  const list = [];
+  for (const d of ALL_DATES) {
+    for (const p of PERIODS) {
+      if (SCHEDULE[d] && SCHEDULE[d].times[p]) {
+        list.push({ date: d, period: p });
+      }
+    }
+  }
+  return list;
+}
+const EVENT_LIST = buildEventList();
+
+function eventIndex(date, period) {
+  return EVENT_LIST.findIndex(e => e.date === date && e.period === period);
+}
+
+function findCurrentEvent() {
+  const cp = currentPeriod();
+  if (SCHEDULE[TODAY] && SCHEDULE[TODAY].times[cp]) {
+    return { date: TODAY, period: cp };
+  }
+  const idx = eventIndex(TODAY, cp);
+  if (idx >= 0) return EVENT_LIST[idx];
+  return EVENT_LIST.find(e => e.date >= TODAY) || EVENT_LIST[EVENT_LIST.length - 1];
+}
+
+function findNextAfterCurrent() {
+  const cur = findCurrentEvent();
+  const idx = eventIndex(cur.date, cur.period);
+  if (idx >= 0 && idx < EVENT_LIST.length - 1) {
+    return EVENT_LIST[idx + 1];
+  }
+  return null;
+}
+
+function findNextUndone() {
+  const cur = findCurrentEvent();
+  const startIdx = eventIndex(cur.date, cur.period);
+  for (let i = startIdx; i < EVENT_LIST.length; i++) {
+    const e = EVENT_LIST[i];
+    if (!getEv(e.date, e.period).done) return e;
+  }
+  return null;
+}
+
+/* -------------------------------------------------------
+   SOUND EFFECTS
+   ------------------------------------------------------- */
+let _actx = null;
+function actx() {
+  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+  return _actx;
+}
+function sndClick() {
+  try {
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine'; o.frequency.value = 700;
+    g.gain.setValueAtTime(0.1, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.06);
+    o.start(); o.stop(c.currentTime + 0.06);
+  } catch(_) {}
+}
+function sndDone() {
+  try {
+    const c = actx();
+    [523.25, 659.25, 783.99].forEach((f, i) => {
+      const o = c.createOscillator(), g = c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.type = 'sine'; o.frequency.value = f;
+      const t = c.currentTime + i * 0.11;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.13, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+      o.start(t); o.stop(t + 0.38);
+    });
+  } catch(_) {}
+}
+function sndUndo() {
+  try {
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine'; o.frequency.value = 380;
+    g.gain.setValueAtTime(0.09, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.14);
+    o.start(); o.stop(c.currentTime + 0.14);
+  } catch(_) {}
+}
+function sndNav() {
+  try {
+    const c = actx(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine'; o.frequency.value = 520;
+    g.gain.setValueAtTime(0.08, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.09);
+    o.start(); o.stop(c.currentTime + 0.09);
+  } catch(_) {}
+}
+
+/* -------------------------------------------------------
+   TOAST
+   ------------------------------------------------------- */
+let _toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/* -------------------------------------------------------
+   VIEW SWITCHING — single-page app, always shows cards
+   ------------------------------------------------------- */
+function showView(name) {
+  if (name === 'cards') renderCards();
+}
+
+/* -------------------------------------------------------
+   MED MODAL STATE
+   ------------------------------------------------------- */
+let _modalMed = null;
+
+function renderModal() {
+  if (!_modalMed) return;
+  document.getElementById('modal-hdr-title').textContent = _modalMed;
+  document.getElementById('modal-body').innerHTML = buildMedTrackerCard(_modalMed);
+}
+
+/* -------------------------------------------------------
+   HTML ESCAPING
+   ------------------------------------------------------- */
+function esc(str) {
+  if (!str && str !== 0) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* -------------------------------------------------------
+   SHARED EVENT CARD BUILDER
+   ------------------------------------------------------- */
+function buildEventCard(date, period, meds, asNeeded, opts = {}) {
+  const ev       = getEv(date, period);
+  const noteArr  = getNotesArray(date, period);
+  const noteKey  = `${date}_${period}`;
+  const noteOpen = state.noteOpen[noteKey] || false;
+
+  // Badge logic
+  const curEv    = findCurrentEvent();
+  const undoneEv = findNextUndone();
+
+  const isCurrent = (curEv && curEv.date === date && curEv.period === period && !ev.done);
+  const isUpNext  = (!isCurrent && undoneEv && undoneEv.date === date && undoneEv.period === period);
+  const isDone    = ev.done;
+
+  let statusClass = '';
+  if      (isCurrent) statusClass = 'status-current';
+  else if (isUpNext)  statusClass = 'status-upnext';
+  else if (isDone)    statusClass = 'status-done';
+
+  let badgeHtml = '';
+  if      (isCurrent) badgeHtml = `<span class="badge badge-current">● Current</span>`;
+  else if (isUpNext)  badgeHtml = `<span class="badge badge-upnext">▶ Up Next</span>`;
+  else if (isDone)    badgeHtml = `<span class="badge badge-done">✓ Done</span>`;
+
+  // Scheduled Meds HTML (with status chips + countdown)
+  const medsHtml = meds.map(m => {
+    const detail = opts.hideDoseDetail ? '' : [m.dose, m.quantity].filter(Boolean).join(' · ');
+    const hasRule = !!MED_RULES[m.medication];
+    const statusChip = hasRule ? medStatusChipHtml(m.medication) : '';
+    const countdownLine = hasRule ? medCountdownLineHtml(m.medication) : '';
+    const clickAttrs = hasRule ? `onclick="APP.openMedModal('${esc(m.medication)}')"` : '';
+    return `
+      <div class="med-row${hasRule ? ' med-row-clickable' : ''}" ${clickAttrs}>
+        <div class="med-dot" style="background:${MED_DOT_COLOR[period]}"></div>
+        <div class="med-info">
+          <div class="med-name-row">
+            <span class="med-name">${esc(m.medication)}</span>
+            ${statusChip}
+          </div>
+          ${detail ? `<div class="med-detail">${esc(detail)}</div>` : ''}
+          ${countdownLine}
+          ${m.notes ? `<div class="med-alert">⚠ ${esc(m.notes)}</div>` : ''}
+        </div>
+        ${hasRule ? '<span class="med-row-chevron">›</span>' : ''}
+      </div>`;
+  }).join('');
+
+  // As-Needed HTML (with status chips + countdown)
+  let asHtml = '';
+  if (asNeeded && asNeeded.length) {
+    const items = asNeeded.map(m => {
+      const detail = opts.hideDoseDetail ? '' : [m.dose, m.quantity].filter(Boolean).join(' · ');
+      const hasRule = !!MED_RULES[m.medication];
+      const statusChip = hasRule ? medStatusChipHtml(m.medication) : '';
+      const countdownLine = hasRule ? medCountdownLineHtml(m.medication) : '';
+      const clickAttrs = hasRule ? `onclick="APP.openMedModal('${esc(m.medication)}')" style="cursor:pointer"` : '';
+      return `
+        <div class="asneeded-item${hasRule ? ' med-row-clickable' : ''}" ${clickAttrs}>
+          <div class="asneeded-header-row">
+            <div class="asneeded-name">${esc(m.medication)}</div>
+            ${statusChip}
+            ${hasRule ? '<span class="med-row-chevron" style="margin-left:auto">›</span>' : ''}
+          </div>
+          ${detail ? `<div class="asneeded-detail">${esc(detail)}</div>` : ''}
+          ${countdownLine}
+          ${m.notes ? `<div class="asneeded-note">⏱ ${esc(m.notes)}</div>` : ''}
+        </div>`;
+    }).join('');
+    asHtml = `
+      <div class="asneeded-section">
+        <div class="asneeded-title">
+          <span style="font-size:14px">🔔</span>
+          <span class="asneeded-label">As Needed</span>
+        </div>
+        ${items}
+      </div>`;
+  }
+
+  // Note log HTML
+  let noteLogHtml = '';
+  if (noteArr.length > 0) {
+    const entries = noteArr.map(e => `
+      <div class="note-entry">
+        <div class="note-ts">${esc(e.ts)}</div>
+        <div class="note-body">${esc(e.text)}</div>
+      </div>`).join('');
+    noteLogHtml = `<div class="note-log">${entries}</div>`;
+  }
+
+  // Note editor HTML
+  let editorHtml = '';
+  if (noteOpen) {
+    editorHtml = `
+      <div class="note-editor">
+        <div class="note-editor-label">New entry — ${makeTimestamp()}</div>
+        <textarea class="note-ta" id="nta-${date}-${period}"
+          placeholder="Describe how this event went…"></textarea>
+        <div class="note-actions">
+          <button class="note-save-btn"   onclick="APP.saveNote('${date}','${period}')">Save Entry</button>
+          <button class="note-cancel-btn" onclick="APP.toggleNote('${date}','${period}')">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  const noteCount    = noteArr.length;
+  const noteBtnLabel = noteCount > 0
+    ? `📋 ${noteCount} Note${noteCount > 1 ? 's' : ''} · Add`
+    : '+ Add Note';
+
+  return `
+    <div class="event-card ${PERIOD_CLASS[period]} ${statusClass}" id="ecard-${date}-${period}">
+      <div class="card-header">
+        <div class="card-period-left">
+          <span class="period-emoji">${PERIOD_EMOJI[period]}</span>
+          <div>
+            <div class="period-name">${PERIOD_LABEL[period]}</div>
+            <div class="period-timerange">${PERIOD_RANGE[period]}</div>
+          </div>
+        </div>
+        <div class="badge-row">${badgeHtml}</div>
+      </div>
+      <div class="card-body">
+        <div class="med-list">${medsHtml}</div>
+        ${asHtml}
+      </div>
+      <div class="card-footer">
+        <div class="footer-divider"></div>
+        <div class="footer-controls">
+          <label class="done-toggle" onclick="APP.toggleDone('${date}','${period}')">
+            <div class="done-box ${isDone ? 'on' : ''}"></div>
+            <span class="done-text">Mark as done</span>
+          </label>
+          <button class="note-toggle-btn" onclick="APP.toggleNote('${date}','${period}')">${noteBtnLabel}</button>
+        </div>
+        ${noteLogHtml}
+        ${editorHtml}
+      </div>
+    </div>`;
+}
+
+/* -------------------------------------------------------
+   MED TRACKER CARD BUILDER (for Med View)
+   ------------------------------------------------------- */
+function buildMedTrackerCard(medName) {
+  const rule   = MED_RULES[medName];
+  const status = getMedStatus(medName);
+  const safeMedId = medName.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+
+  // Overall card state
+  let cardClass, badgeClass, badgeText, cdText, cdClass;
+  if (status.maxReached) {
+    cardClass = 'card-maxed';
+    badgeClass = 'mtc-badge-maxed'; badgeText = '⛔ Max Doses Reached';
+    cdText = `All ${status.maxPerDay} doses given today — resets at midnight`;
+    cdClass = 'mtc-cd-maxed';
+  } else if (status.ready) {
+    cardClass = 'card-ready';
+    badgeClass = 'mtc-badge-ready'; badgeText = '✓ Ready to Give';
+    cdText = status.lastDose ? 'Safe to give now' : 'No dose recorded yet — ready to give';
+    cdClass = 'mtc-cd-ready';
+  } else {
+    cardClass = 'card-waiting';
+    badgeClass = 'mtc-badge-waiting'; badgeText = '⏱ Not Yet Safe';
+    cdText = `${formatCountdown(status.msRemaining)} until next dose`;
+    cdClass = 'mtc-cd-waiting';
+  }
+
+  // Daily progress bar
+  const pct = Math.min(100, (status.dosesToday / status.maxPerDay) * 100);
+  const barClass = pct >= 100 ? 'bar-full' : (pct >= 67 ? 'bar-warn' : 'bar-safe');
+
+  // Last dose info
+  const lastDoseText = status.lastDose
+    ? `Last dose: ${formatDateTime(status.lastDose)} (${formatAgo(status.lastDose)})`
+    : 'No doses logged yet';
+
+  // Manual time input
+  const manualOpen = state.medManualOpen[medName] || false;
+  const now = new Date();
+  const dtLocal = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}T${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+  let manualHtml = '';
+  if (manualOpen) {
+    manualHtml = `
+      <div class="mtc-manual">
+        <div class="mtc-manual-label">Enter exact dose time</div>
+        <input type="datetime-local" class="mtc-dt-input" id="dt-${safeMedId}" value="${dtLocal}">
+        <div class="mtc-manual-btns">
+          <button class="btn-manual-save" onclick="APP.saveManualTime('${esc(medName)}')">✓ Save Dose Time</button>
+          <button class="btn-manual-cancel" onclick="APP.cancelManualTime('${esc(medName)}')">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  // Dose history (last 6 doses)
+  let historyHtml = '';
+  const recentDoses = status.allDoses.slice(0, 6);
+  if (recentDoses.length > 0) {
+    const entries = recentDoses.map(ts => `
+      <div class="dose-log-entry">
+        <span>
+          <span class="dose-log-time">${formatDateTime(ts)}</span>
+          <span class="dose-log-ago">${formatAgo(ts)}</span>
+        </span>
+        <button class="dose-log-undo" onclick="APP.removeDose('${esc(medName)}',${ts})">✕ Remove</button>
+      </div>`).join('');
+    historyHtml = `
+      <div class="mtc-history">
+        <div class="mtc-history-title">Recent Doses</div>
+        ${entries}
+      </div>`;
+  }
+
+  return `
+    <div class="med-tracker-card ${cardClass}" id="mtc-${safeMedId}">
+      <div class="mtc-header">
+        <div class="mtc-name-col">
+          <div class="mtc-name">${esc(medName)}</div>
+          <div class="mtc-dose-info">${esc(rule.dose)} · every ${rule.intervalHours}h · max ${rule.maxPerDay}x/day</div>
+        </div>
+        <div class="mtc-status-badge ${badgeClass}" data-mtc-badge="${esc(medName)}">${badgeText}</div>
+      </div>
+      <div class="mtc-body">
+        <div class="mtc-countdown ${cdClass}" data-mtc-countdown="${esc(medName)}">${cdText}</div>
+        <div class="mtc-daily-row">
+          <div class="mtc-daily-text">${status.dosesToday} of ${status.maxPerDay} doses today</div>
+          <div class="mtc-progress">
+            <div class="mtc-progress-bar ${barClass}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="mtc-last-dose" data-mtc-last="${esc(medName)}">${esc(lastDoseText)}</div>
+        <div class="mtc-actions">
+          <button class="btn-log-now" onclick="APP.logDose('${esc(medName)}')">💊 Log Dose Now</button>
+          <button class="btn-set-time" onclick="APP.toggleManualTime('${esc(medName)}')">${manualOpen ? '✕ Cancel' : '🕐 Set Time'}</button>
+        </div>
+        ${manualHtml}
+      </div>
+      ${historyHtml}
+    </div>`;
+}
+
+/* -------------------------------------------------------
+   MED VIEW RENDERER
+   ------------------------------------------------------- */
+function renderMedView() {
+  const ct = document.getElementById('med-content');
+  let html = '';
+
+  // Section 1: As-Needed
+  html += `<div class="med-section-header">🔔 As-Needed</div>`;
+  ['Gabapentin', 'Tramadol'].forEach(name => {
+    if (MED_RULES[name]) html += buildMedTrackerCard(name);
+  });
+
+  // Section 2: Scheduled Meds
+  html += `<div class="med-section-header">📋 Scheduled</div>`;
+  ['Tylenol', 'Celebrex', 'Aspirin', 'Journavx', 'Tranexamic acid', 'Prednisone', 'Protein supplement'].forEach(name => {
+    if (MED_RULES[name]) html += buildMedTrackerCard(name);
+  });
+
+  ct.innerHTML = html;
+}
+
+/* -------------------------------------------------------
+   CARDS VIEW — all events, chronological
+   ------------------------------------------------------- */
+function renderCards() {
+  const ct = document.getElementById('cards-content');
+
+  let html = '';
+  let lastDate = null;
+
+  for (const { date, period } of EVENT_LIST) {
+    const data = SCHEDULE[date];
+    if (!data || !data.times[period]) continue;
+
+    // Date separator
+    if (date !== lastDate) {
+      const isToday = date === TODAY;
+      const isPast  = date < TODAY;
+      const sepCls  = isToday ? 'is-today' : (isPast ? 'is-past' : '');
+
+      const dayLabel = parseLocal(date).toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric'
+      });
+      const fullLabel = isToday
+        ? `📍 Today — ${dayLabel} · ${data.label}`
+        : `${dayLabel} · ${data.label}`;
+
+      html += `<div class="date-sep ${sepCls}" id="datesep-${date}">
+        <div class="date-sep-line"></div>
+        <div class="date-sep-label">${esc(fullLabel)}</div>
+        <div class="date-sep-line"></div>
+      </div>`;
+
+      if (data.notes) {
+        html += `<div class="schedule-note-banner">📌 ${esc(data.notes)}</div>`;
+      }
+
+      lastDate = date;
+    }
+
+    html += buildEventCard(date, period, data.times[period], data.times.as_needed, { hideDoseDetail: true });
+  }
+
+  ct.innerHTML = html;
+}
+
+/* -------------------------------------------------------
+   DAY VIEW
+   ------------------------------------------------------- */
+function renderDay() {
+  const d    = state.selectedDate;
+  const data = SCHEDULE[d];
+
+  document.getElementById('day-date-title').textContent =
+    parseLocal(d).toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    });
+  document.getElementById('day-date-sub').textContent =
+    data ? data.label : 'No schedule';
+
+  const ct = document.getElementById('day-content');
+  if (!data) {
+    ct.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🌿</div>
+        <div class="empty-text">No medications scheduled for this day.</div>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  if (data.notes) {
+    html += `<div class="schedule-note-banner">📌 ${esc(data.notes)}</div>`;
+  }
+  PERIODS.forEach(p => {
+    if (!data.times[p]) return;
+    html += buildEventCard(d, p, data.times[p], data.times.as_needed);
+  });
+
+  ct.innerHTML = html;
+}
+
+/* -------------------------------------------------------
+   CALENDAR VIEW
+   ------------------------------------------------------- */
+function renderCalendar() {
+  const y = state.calYear, m = state.calMonth;
+  document.getElementById('cal-month-title').textContent = `${MONTH_NAMES[m]} ${y}`;
+
+  const firstWd    = new Date(y, m, 1).getDay();
+  const daysInMo   = new Date(y, m + 1, 0).getDate();
+  const daysInPrev = new Date(y, m, 0).getDate();
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  for (let i = firstWd - 1; i >= 0; i--) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell dim';
+    cell.innerHTML = `<div class="cal-num">${daysInPrev - i}</div>`;
+    grid.appendChild(cell);
+  }
+
+  for (let day = 1; day <= daysInMo; day++) {
+    const ds   = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const data = SCHEDULE[ds];
+    const cell = document.createElement('div');
+
+    const cls = ['cal-cell'];
+    if (data) cls.push('has-data');
+    if (ds === TODAY) cls.push('today');
+    if (ds === state.selectedDate) cls.push('selected');
+    cell.className = cls.join(' ');
+
+    let dots = '';
+    if (data) {
+      PERIODS.forEach(p => {
+        if (data.times[p]) {
+          const done = getEv(ds, p).done;
+          dots += `<div class="cdot ${done ? 'faded' : ''}" style="background:${PERIOD_COLOR[p]}"></div>`;
+        }
+      });
+      if (data.times.as_needed) {
+        dots += `<div class="cdot faded" style="background:${PERIOD_COLOR.as_needed}"></div>`;
+      }
+    }
+
+    cell.innerHTML = `<div class="cal-num">${day}</div>
+      ${dots ? `<div class="cal-dots">${dots}</div>` : ''}`;
+
+    if (data) {
+      cell.addEventListener('click', () => {
+        sndClick();
+        state.selectedDate = ds;
+        showView('day');
+      });
+    }
+
+    grid.appendChild(cell);
+  }
+
+  const trail = (7 - ((firstWd + daysInMo) % 7)) % 7;
+  for (let i = 1; i <= trail; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell dim';
+    cell.innerHTML = `<div class="cal-num">${i}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+/* -------------------------------------------------------
+   RE-RENDER HELPER
+   ------------------------------------------------------- */
+function rerender() {
+  renderCards();
+  if (_modalMed) renderModal();
+}
+
+/* -------------------------------------------------------
+   SCROLL TO CARD (within cards view)
+   ------------------------------------------------------- */
+function scrollToCard(date, period) {
+  if (state.view !== 'cards') return;
+  const el = document.getElementById(`ecard-${date}-${period}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('pulse');
+    setTimeout(() => el.classList.remove('pulse'), 900);
+  }
+}
+
+/* -------------------------------------------------------
+   PUBLIC APP ACTIONS  (called from inline onclick)
+   ------------------------------------------------------- */
+window.APP = {
+
+  openMedModal(medName) {
+    _modalMed = medName;
+    renderModal();
+    document.getElementById('med-modal-overlay').classList.add('open');
+  },
+
+  closeMedModal() {
+    _modalMed = null;
+    document.getElementById('med-modal-overlay').classList.remove('open');
+  },
+
+  toggleDone(date, period) {
+    const ev = getEv(date, period);
+    const newVal = !ev.done;
+    setDone(date, period, newVal);
+    if (newVal) { sndDone(); toast('✓ Marked as done!'); }
+    else        { sndUndo(); toast('↩ Marked as not done'); }
+    rerender();
+  },
+
+  toggleNote(date, period) {
+    sndClick();
+    const k = `${date}_${period}`;
+    state.noteOpen[k] = !state.noteOpen[k];
+    rerender();
+    if (state.noteOpen[k]) {
+      setTimeout(() => {
+        const ta = document.getElementById(`nta-${date}-${period}`);
+        if (ta) { ta.focus(); ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      }, 60);
+    }
+  },
+
+  saveNote(date, period) {
+    const ta = document.getElementById(`nta-${date}-${period}`);
+    if (!ta) return;
+    const text = ta.value.trim();
+    if (!text) { toast('⚠ Nothing to save — please type a note.'); return; }
+    appendNote(date, period, text);
+    state.noteOpen[`${date}_${period}`] = false;
+    sndClick();
+    toast('📝 Note saved with timestamp!');
+    rerender();
+  },
+
+  /* --- MED DOSE LOGGING --- */
+
+  logDose(medName) {
+    const ts = Date.now();
+    if (!state.medDoses[medName]) state.medDoses[medName] = [];
+    state.medDoses[medName].push(ts);
+    state.medDoses[medName].sort((a, b) => b - a); // keep descending
+    saveMedDoses();
+    sndDone();
+    toast(`💊 ${medName} dose logged at ${formatTime(ts)}`);
+    updateCountdowns();
+    if (_modalMed) renderModal();
+  },
+
+  toggleManualTime(medName) {
+    state.medManualOpen[medName] = !state.medManualOpen[medName];
+    if (_modalMed) renderModal();
+  },
+
+  cancelManualTime(medName) {
+    state.medManualOpen[medName] = false;
+    if (_modalMed) renderModal();
+  },
+
+  saveManualTime(medName) {
+    const safeMedId = medName.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+    const input = document.getElementById(`dt-${safeMedId}`);
+    if (!input || !input.value) { toast('⚠ Please select a date and time.'); return; }
+    const ts = new Date(input.value).getTime();
+    if (isNaN(ts)) { toast('⚠ Invalid date/time.'); return; }
+    if (ts > Date.now() + 60000) { toast('⚠ Cannot log a future dose.'); return; }
+    if (!state.medDoses[medName]) state.medDoses[medName] = [];
+    state.medDoses[medName].push(ts);
+    state.medDoses[medName].sort((a, b) => b - a);
+    state.medManualOpen[medName] = false;
+    saveMedDoses();
+    sndDone();
+    toast(`💊 ${medName} dose logged at ${formatDateTime(ts)}`);
+    updateCountdowns();
+    if (_modalMed) renderModal();
+  },
+
+  removeDose(medName, ts) {
+    if (!state.medDoses[medName]) return;
+    const idx = state.medDoses[medName].indexOf(Number(ts));
+    if (idx === -1) return;
+    state.medDoses[medName].splice(idx, 1);
+    saveMedDoses();
+    sndUndo();
+    toast('↩ Dose entry removed');
+    updateCountdowns();
+    if (_modalMed) renderModal();
+  },
+
+  openLogModal() {
+    sndClick();
+    document.getElementById('log-textarea').value = generateLog();
+    document.getElementById('log-overlay').classList.add('open');
+  },
+
+  closeLogModal() {
+    document.getElementById('log-overlay').classList.remove('open');
+  },
+
+  copyLog() {
+    const ta = document.getElementById('log-textarea');
+    const text = ta.value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => toast('📋 Log copied to clipboard!'))
+        .catch(() => { ta.select(); document.execCommand('copy'); toast('📋 Log copied!'); });
+    } else {
+      ta.select();
+      document.execCommand('copy');
+      toast('📋 Log copied!');
+    }
+  },
+
+  saveLog() {
+    const text = document.getElementById('log-textarea').value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `jmeds-log-${TODAY}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('💾 Log saved as file!');
+  }
+};
+
+/* -------------------------------------------------------
+   EXPORT / IMPORT
+   ------------------------------------------------------- */
+function doExport() {
+  sndClick();
+  const payload = {
+    app: "J's Meds",
+    exported: new Date().toISOString(),
+    eventState: state.eventState,
+    medDoses: state.medDoses
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `js-meds-${TODAY}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📤 Progress exported!');
+}
+
+function doImport() {
+  sndClick();
+  document.getElementById('file-import').click();
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      let changed = false;
+      if (data && data.eventState && typeof data.eventState === 'object') {
+        state.eventState = data.eventState;
+        saveEvents();
+        changed = true;
+      }
+      if (data && data.medDoses && typeof data.medDoses === 'object') {
+        state.medDoses = data.medDoses;
+        saveMedDoses();
+        changed = true;
+      }
+      if (changed) {
+        rerender();
+        toast('📥 Progress imported!');
+      } else {
+        toast('❌ Invalid file — no data found');
+      }
+    } catch {
+      toast('❌ Could not read file');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+/* -------------------------------------------------------
+   DOCTOR'S LOG GENERATOR
+   ------------------------------------------------------- */
+function generateLog() {
+  const now = new Date();
+  const exportDate = now.toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  const exportTime = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  const SEP_MAJOR = '='.repeat(56);
+  const SEP_MINOR = '-'.repeat(56);
+
+  const lines = [];
+  lines.push("J's Medication Log");
+  lines.push(`Generated: ${exportDate} at ${exportTime}`);
+  lines.push(SEP_MAJOR);
+  lines.push('');
+
+  const reportDates = ALL_DATES.filter(d => d <= TODAY);
+  let totalScheduled = 0, totalDone = 0, totalDosesLogged = 0;
+
+  for (const date of reportDates) {
+    const data = SCHEDULE[date];
+    if (!data) continue;
+
+    const dateLabel = parseLocal(date).toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+    }).toUpperCase();
+
+    lines.push(`${dateLabel}`);
+    lines.push(`Treatment phase: ${data.label}`);
+    lines.push(SEP_MINOR);
+
+    if (data.notes) {
+      lines.push(`  Important note: ${data.notes}`);
+      lines.push('');
+    }
+
+    // Scheduled periods
+    for (const period of PERIODS) {
+      const meds = data.times[period];
+      if (!meds) continue;
+
+      totalScheduled++;
+      const ev = getEv(date, period);
+      if (ev.done) totalDone++;
+
+      const periodLabel = PERIOD_LABEL[period];
+      const timeRange = PERIOD_RANGE[period];
+      const doneStr = ev.done ? '[COMPLETED]' : '[NOT marked as completed]';
+
+      lines.push('');
+      lines.push(`  ${periodLabel} medications  (${timeRange})  ${doneStr}`);
+      lines.push(`  Scheduled:`);
+
+      for (const m of meds) {
+        const parts = [m.medication];
+        if (m.dose) parts.push(m.dose);
+        if (m.quantity) parts.push(`(${m.quantity})`);
+        let line = `    - ${parts.join('  ')}`;
+        if (m.notes) line += `\n      Note: ${m.notes}`;
+        lines.push(line);
+      }
+
+      const noteArr = getNotesArray(date, period);
+      if (noteArr.length > 0) {
+        lines.push(`  Caregiver notes:`);
+        for (const n of noteArr) {
+          lines.push(`    [${n.ts}]`);
+          lines.push(`    ${n.text}`);
+        }
+      }
+    }
+
+    // As-needed meds scheduled for this day
+    if (data.times.as_needed && data.times.as_needed.length > 0) {
+      lines.push('');
+      lines.push('  As-needed medications available this day:');
+      for (const m of data.times.as_needed) {
+        const parts = [m.medication];
+        if (m.dose) parts.push(m.dose);
+        if (m.quantity) parts.push(`(${m.quantity})`);
+        let line = `    - ${parts.join('  ')}`;
+        if (m.notes) line += `  |  Instructions: ${m.notes}`;
+        lines.push(line);
+      }
+    }
+
+    // Individual dose timestamps logged for this day
+    const dayStart = parseLocal(date).getTime();
+    const dayEnd   = dayStart + 86400000;
+    const doseLinesForDay = [];
+
+    for (const medName of Object.keys(MED_RULES).sort()) {
+      const doses = (state.medDoses[medName] || [])
+        .filter(ts => ts >= dayStart && ts < dayEnd)
+        .sort((a, b) => a - b);
+      if (doses.length === 0) continue;
+
+      totalDosesLogged += doses.length;
+      const times = doses.map(ts =>
+        new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+      ).join(', ');
+      doseLinesForDay.push(`    - ${medName}: ${times}`);
+    }
+
+    if (doseLinesForDay.length > 0) {
+      lines.push('');
+      lines.push('  Individual doses logged (with time):');
+      lines.push(...doseLinesForDay);
+    }
+
+    lines.push('');
+    lines.push(SEP_MINOR);
+    lines.push('');
+  }
+
+  // Summary section
+  lines.push('SUMMARY');
+  lines.push(SEP_MAJOR);
+  if (reportDates.length > 0) {
+    const firstDate = parseLocal(reportDates[0]).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const lastDate  = parseLocal(reportDates[reportDates.length - 1]).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    lines.push(`Report covers:          ${firstDate} through ${lastDate}`);
+  }
+  lines.push(`Days in report:         ${reportDates.length}`);
+  lines.push(`Completed sessions:     ${totalDone} of ${totalScheduled} scheduled`);
+  lines.push(`Individual doses logged: ${totalDosesLogged}`);
+  lines.push(SEP_MAJOR);
+
+  return lines.join('\n');
+}
+
+/* -------------------------------------------------------
+   WIRE UP EVENTS
+   ------------------------------------------------------- */
+
+// "Jump to Today" button in cards view
+document.getElementById('btn-today-jump').addEventListener('click', () => {
+  sndClick();
+  const el = document.getElementById(`datesep-${TODAY}`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  else toast('No schedule found for today.');
+});
+
+// "Current" header button
+document.getElementById('btn-current').addEventListener('click', () => {
+  sndClick();
+  const cur = findCurrentEvent();
+  if (!cur) { toast('No current event found.'); return; }
+  showView('cards');
+  setTimeout(() => scrollToCard(cur.date, cur.period), 120);
+});
+
+// "Up Next" header button
+document.getElementById('btn-upnext').addEventListener('click', () => {
+  sndClick();
+  const next = findNextAfterCurrent();
+  if (!next) { toast('🎉 That was the last scheduled event!'); return; }
+  showView('cards');
+  setTimeout(() => scrollToCard(next.date, next.period), 120);
+});
+
+// Doctor's log
+document.getElementById('btn-log').addEventListener('click', () => APP.openLogModal());
+
+// Export / Import
+document.getElementById('btn-export').addEventListener('click', doExport);
+document.getElementById('btn-import').addEventListener('click', doImport);
+document.getElementById('file-import').addEventListener('change', handleImportFile);
+
+/* -------------------------------------------------------
+   HEADER DATE / TIME CLOCK
+   ------------------------------------------------------- */
+function updateHeaderDate() {
+  const now = new Date();
+  document.getElementById('hdr-date').textContent =
+    now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) +
+    ' · ' +
+    now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+updateHeaderDate();
+setInterval(updateHeaderDate, 30000);
+
+/* -------------------------------------------------------
+   INIT
+   ------------------------------------------------------- */
+showView('cards');
+
+// Auto-scroll to today's section on first load
+setTimeout(() => {
+  const el = document.getElementById(`datesep-${TODAY}`);
+  if (el) el.scrollIntoView({ behavior: 'auto', block: 'start' });
+}, 80);
+
+</script>
+</body>
+</html>
