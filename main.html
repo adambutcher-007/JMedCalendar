@@ -1341,6 +1341,144 @@ body {
 }
 
 /* =============================================
+   ADD MEDICATION — BUTTON + MODAL
+   ============================================= */
+.add-med-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 7px 13px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+.add-med-btn:active { transform: scale(0.91); background: var(--primary-dark); }
+.add-med-form {
+  padding: 16px 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.add-med-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.add-med-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+}
+.add-med-input {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  font-size: 15px;
+  background: var(--surface2);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.add-med-input:focus { border-color: var(--primary); background: white; }
+select.add-med-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B52AA' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+.add-med-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.add-med-toggle-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.toggle-switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+.add-med-error {
+  color: #C0302A;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 18px;
+}
+.add-med-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.add-med-cancel-btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  transition: background 0.15s;
+}
+.add-med-save-btn {
+  flex: 2;
+  padding: 13px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: var(--primary);
+  color: white;
+  transition: background 0.15s;
+}
+.add-med-save-btn:hover { background: var(--primary-dark); }
+
+/* Custom meds section inside cards view */
+.custom-meds-section { padding: 0 14px 20px; }
+.custom-meds-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  padding: 18px 0 10px;
+  border-top: 2px solid var(--primary-light);
+}
+.btn-delete-med {
+  background: none;
+  border: 1px solid #C0302A;
+  color: #C0302A;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-delete-med:hover { background: #FFF0EF; }
+
+/* =============================================
    DESKTOP WRAPPER
    ============================================= */
 @media (min-width: 640px) {
@@ -1368,6 +1506,7 @@ body {
       </div>
       <div class="header-right">
         <div class="header-date-chip" id="hdr-date"></div>
+        <button class="add-med-btn" onclick="APP.openAddMedModal()" title="Add medication">+</button>
         <button class="icon-btn" id="btn-log" title="Doctor's log">🖨️</button>
         <button class="icon-btn" id="btn-export" title="Export data">📤</button>
         <button class="icon-btn" id="btn-import" title="Import data">📥</button>
@@ -1405,6 +1544,61 @@ body {
         <button class="modal-close-btn" onclick="APP.closeMedModal()">✕</button>
       </div>
       <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- ADD MEDICATION MODAL (bottom sheet) -->
+  <div id="add-med-overlay" class="modal-overlay" onclick="if(event.target===this)APP.closeAddMedModal()">
+    <div class="modal-panel">
+      <div class="modal-drag-bar"></div>
+      <div class="modal-hdr">
+        <div class="modal-hdr-title">Add Medication</div>
+        <button class="modal-close-btn" onclick="APP.closeAddMedModal()">✕</button>
+      </div>
+      <div class="add-med-form">
+        <div class="add-med-field">
+          <label class="add-med-label" for="am-name">Medication name *</label>
+          <input type="text" class="add-med-input" id="am-name" placeholder="e.g. Ibuprofen" autocomplete="off">
+        </div>
+        <div class="add-med-field">
+          <label class="add-med-label" for="am-dose">Dose description</label>
+          <input type="text" class="add-med-input" id="am-dose" placeholder="e.g. 400 mg · 1 tablet" autocomplete="off">
+        </div>
+        <div class="add-med-row2">
+          <div class="add-med-field">
+            <label class="add-med-label" for="am-interval">Interval (hours) *</label>
+            <input type="number" class="add-med-input" id="am-interval" min="1" max="96" placeholder="e.g. 6">
+          </div>
+          <div class="add-med-field">
+            <label class="add-med-label" for="am-maxperday">Max per day</label>
+            <input type="number" class="add-med-input" id="am-maxperday" min="1" max="24" placeholder="blank = no limit">
+          </div>
+        </div>
+        <div class="add-med-field">
+          <label class="add-med-label" for="am-period">When to take</label>
+          <select class="add-med-input" id="am-period">
+            <option value="morning">Morning</option>
+            <option value="early_pm">Afternoon</option>
+            <option value="evening">Evening</option>
+            <option value="as_needed">As-Needed (PRN)</option>
+          </select>
+        </div>
+        <div class="add-med-row2">
+          <div class="add-med-field">
+            <label class="add-med-label" for="am-startdate">Start date</label>
+            <input type="date" class="add-med-input" id="am-startdate">
+          </div>
+          <div class="add-med-field">
+            <label class="add-med-label" for="am-enddate">End date</label>
+            <input type="date" class="add-med-input" id="am-enddate">
+          </div>
+        </div>
+        <div class="add-med-error" id="am-error"></div>
+        <div class="add-med-actions">
+          <button class="add-med-cancel-btn" onclick="APP.closeAddMedModal()">Cancel</button>
+          <button class="add-med-save-btn" onclick="APP.submitAddMed()">💊 Add Medication</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1852,8 +2046,9 @@ const state = {
   selectedDate:  TODAY,
   calYear:       new Date().getFullYear(),
   calMonth:      new Date().getMonth(),
-  eventState:    JSON.parse(localStorage.getItem('jMedsEvents') || '{}'),
-  medDoses:      JSON.parse(localStorage.getItem('jMedDoses')  || '{}'),
+  eventState:    JSON.parse(localStorage.getItem('jMedsEvents')  || '{}'),
+  medDoses:      JSON.parse(localStorage.getItem('jMedDoses')   || '{}'),
+  customMeds:    JSON.parse(localStorage.getItem('jCustomMeds') || '[]'),
   noteOpen:      {},  // { 'YYYY-MM-DD_period': true }
   medManualOpen: {}   // { 'MedName': true }
 };
@@ -1864,6 +2059,23 @@ function saveEvents() {
 
 function saveMedDoses() {
   localStorage.setItem('jMedDoses', JSON.stringify(state.medDoses));
+}
+
+function saveCustomMeds() {
+  localStorage.setItem('jCustomMeds', JSON.stringify(state.customMeds));
+}
+
+function loadCustomMeds() {
+  for (const cm of state.customMeds) {
+    if (!MED_RULES[cm.name]) {
+      MED_RULES[cm.name] = {
+        intervalHours: cm.intervalHours,
+        maxPerDay:     cm.maxPerDay,
+        dose:          cm.dose,
+        asNeeded:      cm.asNeeded
+      };
+    }
+  }
 }
 
 function evKey(date, period) { return `${date}_${period}`; }
@@ -2477,6 +2689,7 @@ function buildMedTrackerCard(medName) {
         <div class="mtc-actions">
           <button class="btn-log-now" onclick="APP.logDose('${esc(medName)}')">💊 Log Dose Now</button>
           <button class="btn-set-time" onclick="APP.toggleManualTime('${esc(medName)}')">${manualOpen ? '✕ Cancel' : '🕐 Set Time'}</button>
+          ${state.customMeds.some(cm => cm.name === medName) ? `<button class="btn-delete-med" onclick="APP.deleteCustomMed('${esc(medName)}')">🗑 Remove</button>` : ''}
         </div>
         ${manualHtml}
       </div>
@@ -2545,7 +2758,18 @@ function renderCards() {
       lastDate = date;
     }
 
-    html += buildEventCard(date, period, data.times[period], data.times.as_needed, { hideDoseDetail: true });
+    const customScheduled = state.customMeds
+      .filter(cm => !cm.asNeeded && cm.period === period && date >= cm.startDate && date <= cm.endDate)
+      .map(cm => ({ medication: cm.name, dose: cm.dose, quantity: '' }));
+
+    const customAsNeeded = state.customMeds
+      .filter(cm => cm.asNeeded && date >= cm.startDate && date <= cm.endDate)
+      .map(cm => ({ medication: cm.name, dose: cm.dose, quantity: '' }));
+
+    const allMeds     = [...data.times[period], ...customScheduled];
+    const allAsNeeded = [...(data.times.as_needed || []), ...customAsNeeded];
+
+    html += buildEventCard(date, period, allMeds, allAsNeeded, { hideDoseDetail: true });
   }
 
   ct.innerHTML = html;
@@ -2816,6 +3040,69 @@ window.APP = {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast('💾 Log saved as file!');
+  },
+
+  /* --- ADD MEDICATION --- */
+
+  openAddMedModal() {
+    document.getElementById('am-name').value      = '';
+    document.getElementById('am-dose').value      = '';
+    document.getElementById('am-interval').value  = '';
+    document.getElementById('am-maxperday').value = '';
+    document.getElementById('am-period').value    = 'evening';
+    document.getElementById('am-startdate').value = TODAY;
+    document.getElementById('am-enddate').value   = ALL_DATES[ALL_DATES.length - 1] || TODAY;
+    document.getElementById('am-error').textContent = '';
+    document.getElementById('add-med-overlay').classList.add('open');
+    setTimeout(() => document.getElementById('am-name').focus(), 120);
+  },
+
+  closeAddMedModal() {
+    document.getElementById('add-med-overlay').classList.remove('open');
+  },
+
+  submitAddMed() {
+    const name      = document.getElementById('am-name').value.trim();
+    const dose      = document.getElementById('am-dose').value.trim();
+    const interval  = parseInt(document.getElementById('am-interval').value, 10);
+    const maxRaw    = document.getElementById('am-maxperday').value.trim();
+    const maxPerDay = maxRaw === '' ? null : parseInt(maxRaw, 10);
+    const period    = document.getElementById('am-period').value;
+    const startDate = document.getElementById('am-startdate').value;
+    const endDate   = document.getElementById('am-enddate').value;
+    const asNeeded  = period === 'as_needed';
+    const errEl     = document.getElementById('am-error');
+
+    if (!name) { errEl.textContent = 'Name is required.'; return; }
+    if (MED_RULES[name]) { errEl.textContent = `"${name}" already exists.`; return; }
+    if (!interval || interval < 1) { errEl.textContent = 'Interval must be at least 1 hour.'; return; }
+    if (maxPerDay !== null && (isNaN(maxPerDay) || maxPerDay < 1)) {
+      errEl.textContent = 'Max per day must be a positive number (or leave blank).'; return;
+    }
+    if (!startDate || !endDate) { errEl.textContent = 'Start and end dates are required.'; return; }
+    if (startDate > endDate) { errEl.textContent = 'End date must be on or after start date.'; return; }
+    errEl.textContent = '';
+
+    const entry = { name, dose: dose || name, intervalHours: interval, maxPerDay, asNeeded, period, startDate, endDate };
+    state.customMeds.push(entry);
+    MED_RULES[name] = { intervalHours: interval, maxPerDay, dose: dose || name, asNeeded };
+    saveCustomMeds();
+    sndDone();
+    toast(`💊 ${name} added!`);
+    this.closeAddMedModal();
+    rerender();
+  },
+
+  deleteCustomMed(name) {
+    if (!confirm(`Remove "${name}" from your custom medications?\n\nDose history will also be cleared.`)) return;
+    state.customMeds = state.customMeds.filter(cm => cm.name !== name);
+    delete MED_RULES[name];
+    delete state.medDoses[name];
+    saveCustomMeds();
+    saveMedDoses();
+    sndUndo();
+    toast(`🗑 ${name} removed.`);
+    rerender();
   }
 };
 
@@ -2828,7 +3115,8 @@ function doExport() {
     app: "J's Meds",
     exported: new Date().toISOString(),
     eventState: state.eventState,
-    medDoses: state.medDoses
+    medDoses: state.medDoses,
+    customMeds: state.customMeds
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -2863,6 +3151,16 @@ function handleImportFile(e) {
       if (data && data.medDoses && typeof data.medDoses === 'object') {
         state.medDoses = data.medDoses;
         saveMedDoses();
+        changed = true;
+      }
+      if (data && Array.isArray(data.customMeds)) {
+        state.customMeds = data.customMeds;
+        saveCustomMeds();
+        for (const cm of state.customMeds) {
+          if (!MED_RULES[cm.name]) {
+            MED_RULES[cm.name] = { intervalHours: cm.intervalHours, maxPerDay: cm.maxPerDay, dose: cm.dose, asNeeded: cm.asNeeded };
+          }
+        }
         changed = true;
       }
       if (changed) {
@@ -2921,7 +3219,10 @@ function generateLog() {
     // Scheduled periods
     for (const period of PERIODS) {
       const meds = data.times[period];
-      if (!meds) continue;
+      const customForSlot = state.customMeds.filter(
+        cm => !cm.asNeeded && cm.period === period && date >= cm.startDate && date <= cm.endDate
+      );
+      if (!meds && customForSlot.length === 0) continue;
 
       totalScheduled++;
       const ev = getEv(date, period);
@@ -2935,13 +3236,16 @@ function generateLog() {
       lines.push(`  ${periodLabel} medications  (${timeRange})  ${doneStr}`);
       lines.push(`  Scheduled:`);
 
-      for (const m of meds) {
+      for (const m of (meds || [])) {
         const parts = [m.medication];
         if (m.dose) parts.push(m.dose);
         if (m.quantity) parts.push(`(${m.quantity})`);
         let line = `    - ${parts.join('  ')}`;
         if (m.notes) line += `\n      Note: ${m.notes}`;
         lines.push(line);
+      }
+      for (const cm of customForSlot) {
+        lines.push(`    - ${cm.name}  ${cm.dose}  [custom]`);
       }
 
       const noteArr = getNotesArray(date, period);
@@ -2955,16 +3259,22 @@ function generateLog() {
     }
 
     // As-needed meds scheduled for this day
-    if (data.times.as_needed && data.times.as_needed.length > 0) {
+    const customAsNeededForDay = state.customMeds.filter(
+      cm => cm.asNeeded && date >= cm.startDate && date <= cm.endDate
+    );
+    if ((data.times.as_needed && data.times.as_needed.length > 0) || customAsNeededForDay.length > 0) {
       lines.push('');
       lines.push('  As-needed medications available this day:');
-      for (const m of data.times.as_needed) {
+      for (const m of (data.times.as_needed || [])) {
         const parts = [m.medication];
         if (m.dose) parts.push(m.dose);
         if (m.quantity) parts.push(`(${m.quantity})`);
         let line = `    - ${parts.join('  ')}`;
         if (m.notes) line += `  |  Instructions: ${m.notes}`;
         lines.push(line);
+      }
+      for (const cm of customAsNeededForDay) {
+        lines.push(`    - ${cm.name}  ${cm.dose}  [custom]`);
       }
     }
 
@@ -3067,6 +3377,7 @@ setInterval(updateHeaderDate, 30000);
 /* -------------------------------------------------------
    INIT
    ------------------------------------------------------- */
+loadCustomMeds();
 showView('cards');
 
 // Auto-scroll to today's section on first load
