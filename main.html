@@ -1580,6 +1580,8 @@ select.add-med-input { appearance: none; background-image: url("data:image/svg+x
             <option value="morning">Morning</option>
             <option value="early_pm">Afternoon</option>
             <option value="evening">Evening</option>
+            <option value="morning_evening">Morning and Evening</option>
+            <option value="all_scheduled">All 3 Times</option>
             <option value="as_needed">As-Needed (PRN)</option>
           </select>
         </div>
@@ -2063,6 +2065,13 @@ function saveMedDoses() {
 
 function saveCustomMeds() {
   localStorage.setItem('jCustomMeds', JSON.stringify(state.customMeds));
+}
+
+function customMedMatchesPeriod(cmPeriod, cardPeriod) {
+  if (cmPeriod === cardPeriod) return true;
+  if (cmPeriod === 'morning_evening') return cardPeriod === 'morning' || cardPeriod === 'evening';
+  if (cmPeriod === 'all_scheduled')   return true;
+  return false;
 }
 
 function loadCustomMeds() {
@@ -2759,7 +2768,7 @@ function renderCards() {
     }
 
     const customScheduled = state.customMeds
-      .filter(cm => !cm.asNeeded && cm.period === period && date >= cm.startDate && date <= cm.endDate)
+      .filter(cm => !cm.asNeeded && customMedMatchesPeriod(cm.period, period) && date >= cm.startDate && date <= cm.endDate)
       .map(cm => ({ medication: cm.name, dose: cm.dose, quantity: '' }));
 
     const customAsNeeded = state.customMeds
@@ -3220,7 +3229,7 @@ function generateLog() {
     for (const period of PERIODS) {
       const meds = data.times[period];
       const customForSlot = state.customMeds.filter(
-        cm => !cm.asNeeded && cm.period === period && date >= cm.startDate && date <= cm.endDate
+        cm => !cm.asNeeded && customMedMatchesPeriod(cm.period, period) && date >= cm.startDate && date <= cm.endDate
       );
       if (!meds && customForSlot.length === 0) continue;
 
