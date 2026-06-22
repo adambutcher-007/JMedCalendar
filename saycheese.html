@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SayCheese</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #0c0c0c;
+  --surf:   #161616;
+  --surf2:  #1e1e1e;
+  --border: #2a2a2a;
+  --amber:  #e89420;
+  --red:    #e84040;
+  --text:   #f0ece2;
+  --dim:    #504840;
+  --mid:    #887870;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.hidden { display: none !important; }
+
+/* Camera flash overlay */
+#flash {
+  position: fixed; inset: 0;
+  background: #fff;
+  opacity: 0; pointer-events: none;
+  z-index: 999;
+  transition: opacity 0.22s ease-out;
+}
+
+/* App shell */
+.app {
+  width: 100%; max-width: 340px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 18px;
+}
+
+/* ── Header ── */
+header { display: flex; align-items: center; gap: 7px; }
+header h1 {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--dim);
+}
+.hicon { width: 15px; height: 15px; opacity: 0.38; }
+
+/* ── Status ── */
+#status {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px; color: var(--dim);
+  letter-spacing: 0.04em; text-align: center;
+  min-height: 15px;
+}
+
+/* ── Ring ── */
+#ringsvg {
+  display: block;
+  width: 100%; max-width: 240px; height: auto;
+  overflow: visible;
+}
+
+@keyframes breathe {
+  0%,100% { opacity: 1; } 50% { opacity: 0.28; }
+}
+@keyframes strobe {
+  0%,100% { opacity: 1; } 50% { opacity: 0.48; }
+}
+.ring-listen  #progressRing { animation: breathe 1.9s ease-in-out infinite; }
+.ring-urgent  #progressRing { animation: strobe  0.62s ease-in-out infinite; }
+
+/* ── Mic Viz ── */
+#micViz {
+  width: 100%;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.mic-label {
+  font-size: 10px; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  text-align: center; font-family: 'Space Mono', monospace;
+}
+#waveCanvas {
+  display: block; width: 100%; height: 58px;
+  background: var(--surf); border-radius: 4px;
+}
+.lvl-track {
+  position: relative; height: 5px;
+  background: var(--surf2); border-radius: 3px;
+}
+#lvlFill {
+  height: 100%; width: 0%;
+  background: var(--amber); border-radius: 3px;
+}
+#lvlThresh {
+  position: absolute; top: -4px;
+  width: 2px; height: 13px;
+  background: var(--red); border-radius: 1px;
+  transform: translateX(-50%);
+}
+.lvl-ends {
+  display: flex; justify-content: space-between;
+  font-size: 9px; color: var(--dim);
+  font-family: 'Space Mono', monospace;
+  margin-top: 3px;
+}
+.sens-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.sens-row label {
+  font-size: 10px; color: var(--dim);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.sens-row input[type=range] {
+  flex: 1; -webkit-appearance: none;
+  height: 3px; background: var(--surf2);
+  border-radius: 2px; outline: none;
+}
+.sens-row input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  border-radius: 50%; background: var(--amber); cursor: pointer;
+  border: 2px solid var(--surf);
+}
+.sens-row input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--amber); cursor: pointer;
+  border: 2px solid var(--surf);
+}
+#sensVal {
+  font-size: 10px; color: var(--amber);
+  font-family: 'Space Mono', monospace;
+  min-width: 26px; text-align: right;
+}
+
+/* ── Button ── */
+#btn {
+  width: 100%; padding: 15px;
+  background: var(--amber); color: #000;
+  border: none; border-radius: 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.1s;
+}
+#btn:active { opacity: 0.72; }
+#btn.ghost {
+  background: transparent; color: var(--dim);
+  border: 1px solid var(--border);
+}
+#btn:disabled {
+  background: var(--surf2); color: var(--dim);
+  cursor: not-allowed;
+}
+
+/* ── Error ── */
+#errMsg {
+  font-size: 11px; color: var(--red);
+  font-family: 'Space Mono', monospace;
+  text-align: center; min-height: 14px;
+}
+</style>
+</head>
+<body>
+
+<div id="flash"></div>
+
+<div class="app">
+
+  <header>
+    <!-- Camera viewfinder crosshair icon -->
+    <svg class="hicon" viewBox="0 0 15 15" fill="none">
+      <circle cx="7.5" cy="7.5" r="6.2" stroke="#f0ece2" stroke-width="1"/>
+      <circle cx="7.5" cy="7.5" r="1.8" fill="#f0ece2"/>
+      <line x1="7.5" y1="1"    x2="7.5" y2="4.2"  stroke="#f0ece2" stroke-width="1"/>
+      <line x1="7.5" y1="10.8" x2="7.5" y2="14"   stroke="#f0ece2" stroke-width="1"/>
+      <line x1="1"   y1="7.5"  x2="4.2" y2="7.5"  stroke="#f0ece2" stroke-width="1"/>
+      <line x1="10.8" y1="7.5" x2="14"  y2="7.5"  stroke="#f0ece2" stroke-width="1"/>
+    </svg>
+    <h1>SayCheese</h1>
+  </header>
+
+  <p id="status">Tap Start to begin</p>
+
+  <svg id="ringsvg" viewBox="0 0 240 240">
+    <g id="ticks"></g>
+    <!-- Track circle -->
+    <circle cx="120" cy="120" r="90"
+      fill="none" stroke="#1e1e1e" stroke-width="5"/>
+    <!-- Progress arc — starts empty, drains clockwise -->
+    <circle id="progressRing" cx="120" cy="120" r="90"
+      fill="none" stroke="#e89420" stroke-width="5"
+      stroke-linecap="butt"
+      transform="rotate(-90 120 120)"/>
+    <!-- Primary time display -->
+    <text id="timeText" x="120" y="113"
+      text-anchor="middle" dominant-baseline="middle"
+      font-family="'Space Mono', monospace"
+      font-size="46" font-weight="700" fill="#f0ece2">—</text>
+    <!-- Sub label -->
+    <text id="subText" x="120" y="148"
+      text-anchor="middle" dominant-baseline="middle"
+      font-family="'Space Mono', monospace"
+      font-size="9" letter-spacing="3.5" fill="#484440">READY</text>
+  </svg>
+
+  <div id="micViz" class="hidden">
+    <p class="mic-label">Waiting for a sharp sound cue…</p>
+    <canvas id="waveCanvas" width="320" height="58"></canvas>
+    <div class="lvl-track">
+      <div id="lvlFill"></div>
+      <div id="lvlThresh"></div>
+    </div>
+    <div class="lvl-ends"><span>soft</span><span>loud</span></div>
+    <div class="sens-row">
+      <label for="sensSlider">Trigger</label>
+      <input id="sensSlider" type="range" min="0.01" max="0.30" step="0.005" value="0.08">
+      <span id="sensVal">low</span>
+    </div>
+  </div>
+
+  <button id="btn">Start</button>
+  <p id="errMsg"></p>
+
+</div>
+
+<script>
+'use strict';
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const R    = 90;
+const CIRC = 2 * Math.PI * R;   // 565.49
+const DUR  = 60;                  // seconds
+
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const flashEl    = $('flash');
+const statusEl   = $('status');
+const ringsvg    = $('ringsvg');
+const progRing   = $('progressRing');
+const timeText   = $('timeText');
+const subText    = $('subText');
+const micViz     = $('micViz');
+const waveCanvas = $('waveCanvas');
+const lvlFill    = $('lvlFill');
+const lvlThresh  = $('lvlThresh');
+const sensSlider = $('sensSlider');
+const sensValEl  = $('sensVal');
+const btn        = $('btn');
+const errMsg     = $('errMsg');
+const wCtx       = waveCanvas.getContext('2d');
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const S = { IDLE: 0, SPEAK: 1, LISTEN: 2, COUNT: 3, DONE: 4 };
+let state     = S.IDLE;
+let actx      = null;        // AudioContext
+let analyser  = null;        // AnalyserNode
+let mic       = null;        // MediaStream
+let raf       = null;        // rAF id
+let dotTimer  = null;        // speaking dot animation interval
+let countdown = 0;           // end timestamp (ms)
+let armed     = false;       // peak detection active
+
+// Rolling RMS baseline (last 40 frames)
+const RBUF = 40;
+const rbuf = new Float32Array(RBUF).fill(0.001);
+let   ri   = 0;
+
+// ── Build tick marks & labels ─────────────────────────────────────────────────
+(function buildTicks() {
+  const g  = $('ticks');
+  const NS = 'http://www.w3.org/2000/svg';
+  const cx = 120, cy = 120;
+
+  function attr(el, obj) {
+    Object.entries(obj).forEach(([k, v]) => el.setAttribute(k, v));
+    return el;
+  }
+
+  for (let i = 0; i < 60; i++) {
+    const a  = (i / 60) * Math.PI * 2 - Math.PI / 2;
+    const mj = i % 5 === 0;
+    const ro = mj ? 110 : 107, ri_ = mj ? 101 : 104;
+    g.appendChild(attr(document.createElementNS(NS, 'line'), {
+      x1: (cx + ro  * Math.cos(a)).toFixed(2),
+      y1: (cy + ro  * Math.sin(a)).toFixed(2),
+      x2: (cx + ri_ * Math.cos(a)).toFixed(2),
+      y2: (cy + ri_ * Math.sin(a)).toFixed(2),
+      stroke: mj ? '#3a3530' : '#242220',
+      'stroke-width': mj ? '1.5' : '1'
+    }));
+  }
+
+  // Labels at 0, 15, 30, 45 seconds
+  [[0,'0'],[15,'15'],[30,'30'],[45,'45']].forEach(([tick, lbl]) => {
+    const a  = (tick / 60) * Math.PI * 2 - Math.PI / 2;
+    const rl = 115;
+    const tx = attr(document.createElementNS(NS, 'text'), {
+      x: (cx + rl * Math.cos(a)).toFixed(2),
+      y: (cy + rl * Math.sin(a)).toFixed(2),
+      'text-anchor': 'middle',
+      'dominant-baseline': 'middle',
+      'font-family': "'Space Mono', monospace",
+      'font-size': '8',
+      fill: '#383430'
+    });
+    tx.textContent = lbl;
+    g.appendChild(tx);
+  });
+})();
+
+// Initialise ring dasharray (empty)
+progRing.style.strokeDasharray  = CIRC;
+progRing.style.strokeDashoffset = CIRC;
+
+// ── Sensitivity slider ────────────────────────────────────────────────────────
+function syncSens() {
+  const v = +sensSlider.value, mx = +sensSlider.max;
+  lvlThresh.style.left   = (v / mx * 100) + '%';
+  sensValEl.textContent  = v < 0.06 ? 'low' : v < 0.16 ? 'mid' : 'high';
+}
+sensSlider.addEventListener('input', syncSens);
+syncSens();
+
+// ── Utility helpers ───────────────────────────────────────────────────────────
+function showErr(msg) {
+  errMsg.textContent = msg;
+  setTimeout(() => { errMsg.textContent = ''; }, 6000);
+}
+
+function stopRaf() {
+  if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+}
+
+function stopMic() {
+  if (mic) { mic.getTracks().forEach(t => t.stop()); mic = null; }
+}
+
+function camFlash() {
+  flashEl.style.transition = 'none';
+  flashEl.style.opacity    = '1';
+  // Two rAF hops ensure the browser paints the opaque frame before fading
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    flashEl.style.transition = 'opacity 0.22s ease-out';
+    flashEl.style.opacity    = '0';
+  }));
+}
+
+function setRing(frac, color) {
+  progRing.style.strokeDashoffset = CIRC * (1 - Math.max(0, Math.min(1, frac)));
+  if (color) progRing.style.stroke = color;
+}
+
+function fmt(secs) {
+  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+}
+
+// ── State machine ─────────────────────────────────────────────────────────────
+function go(s) {
+  state = s;
+
+  // Teardown shared side-effects
+  clearInterval(dotTimer); dotTimer = null;
+  stopRaf();
+  ringsvg.classList.remove('ring-listen', 'ring-urgent');
+  btn.className = '';
+  timeText.setAttribute('fill', '#f0ece2');
+
+  switch (s) {
+
+    case S.IDLE: {
+      statusEl.textContent = 'Tap Start to begin';
+      timeText.textContent = '—';
+      subText.textContent  = 'READY';
+      subText.setAttribute('fill', '#484440');
+      setRing(0, '#e89420');
+      micViz.classList.add('hidden');
+      btn.textContent = 'Start';
+      btn.disabled    = false;
+      break;
+    }
+
+    case S.SPEAK: {
+      statusEl.textContent = 'Listen up…';
+      timeText.textContent = '.';
+      subText.textContent  = 'LISTEN';
+      subText.setAttribute('fill', '#e89420');
+      setRing(0);
+      micViz.classList.add('hidden');
+      btn.textContent = 'Speaking…';
+      btn.disabled    = true;
+      // Animate dots while TTS plays
+      let di = 0;
+      dotTimer = setInterval(() => {
+        di = (di + 1) % 3;
+        timeText.textContent = ['.', '..', '...'][di];
+      }, 420);
+      break;
+    }
+
+    case S.LISTEN: {
+      statusEl.textContent = 'Make a sharp sound — clap, snap, or call out';
+      timeText.textContent = '?';
+      subText.textContent  = 'WAITING';
+      subText.setAttribute('fill', '#e89420');
+      setRing(0);
+      ringsvg.classList.add('ring-listen');
+      micViz.classList.remove('hidden');
+      btn.textContent = 'Cancel';
+      btn.disabled    = false;
+      btn.className   = 'ghost';
+      rbuf.fill(0.001); ri = 0; armed = false;
+      break;
+    }
+
+    case S.COUNT: {
+      statusEl.textContent = 'Go!';
+      timeText.textContent = fmt(DUR);
+      subText.textContent  = 'REMAINING';
+      subText.setAttribute('fill', '#585450');
+      setRing(1, '#e89420');
+      micViz.classList.add('hidden');
+      btn.textContent = 'Cancel';
+      btn.disabled    = false;
+      btn.className   = 'ghost';
+      break;
+    }
+
+    case S.DONE: {
+      statusEl.textContent = "Time's up!";
+      timeText.textContent = '0:00';
+      subText.textContent  = "TIME'S UP";
+      subText.setAttribute('fill', '#e84040');
+      setRing(0, '#e84040');
+      micViz.classList.add('hidden');
+      btn.textContent = 'Start Again';
+      btn.disabled    = false;
+      break;
+    }
+  }
+}
+
+// ── Button handler ────────────────────────────────────────────────────────────
+btn.addEventListener('click', () => {
+
+  // Cancel from active states
+  if (state === S.LISTEN || state === S.COUNT) {
+    stopMic(); go(S.IDLE);
+    return;
+  }
+  if (state !== S.IDLE && state !== S.DONE) return;
+
+  // ── AudioContext MUST be created inside a user gesture ──────────────────
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  actx.resume().catch(() => {});
+
+  stopMic();
+  go(S.SPEAK);
+
+  // ── TTS — also best called synchronously inside the gesture ─────────────
+  if (!window.speechSynthesis) {
+    setTimeout(beginListen, 400);
+    return;
+  }
+
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance('Say cheese to start');
+  utter.rate = 0.88; utter.volume = 1;
+
+  // Guard: call beginListen exactly once, even if both onend + fallback fire
+  let called = false;
+  const done = (delay) => {
+    if (called) return;
+    called = true;
+    clearTimeout(guard);
+    setTimeout(beginListen, delay);
+  };
+
+  // Hard safety timeout in case onend/onerror never fires (iOS quirk)
+  const guard = setTimeout(() => done(0), 5500);
+  utter.onend  = () => done(300);
+  utter.onerror = () => done(400);
+
+  // Handle late-loading voices (common on Android)
+  let didSpeak = false;
+  const doSpeak = () => {
+    if (didSpeak) return;
+    didSpeak = true;
+    speechSynthesis.speak(utter);
+  };
+
+  if (speechSynthesis.getVoices().length > 0) {
+    doSpeak();
+  } else {
+    speechSynthesis.addEventListener('voiceschanged', doSpeak, { once: true });
+    setTimeout(doSpeak, 500); // fallback if event never fires
+  }
+});
+
+// ── Listening ─────────────────────────────────────────────────────────────────
+async function beginListen() {
+  if (state !== S.SPEAK) return;
+  go(S.LISTEN);
+
+  try {
+    if (actx.state !== 'running') await actx.resume();
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    mic = stream;
+
+    const src = actx.createMediaStreamSource(stream);
+    analyser  = actx.createAnalyser();
+    analyser.fftSize = 512;
+    analyser.smoothingTimeConstant = 0.2;
+    src.connect(analyser);
+
+    // Let baseline settle for 700 ms before arming peak detection
+    setTimeout(() => {
+      if (state === S.LISTEN) {
+        armed = true;
+        raf   = requestAnimationFrame(listenLoop);
+      }
+    }, 700);
+
+  } catch (e) {
+    go(S.IDLE);
+    showErr(e.name === 'NotAllowedError'
+      ? 'Mic blocked — allow microphone access and try again.'
+      : 'Mic unavailable: ' + e.message);
+  }
+}
+
+// ── Peak detection loop ───────────────────────────────────────────────────────
+function listenLoop() {
+  if (state !== S.LISTEN) return;
+
+  const len  = analyser.frequencyBinCount;   // fftSize/2 = 256
+  const data = new Uint8Array(len);
+  analyser.getByteTimeDomainData(data);
+
+  // RMS of this frame
+  let sum = 0;
+  for (let i = 0; i < len; i++) {
+    const v = (data[i] - 128) / 128;
+    sum += v * v;
+  }
+  const rms = Math.sqrt(sum / len);
+
+  // Update level meter
+  lvlFill.style.width = Math.min(rms / +sensSlider.max * 100, 100) + '%';
+
+  // Draw waveform
+  drawWave(data, len);
+
+  // Update rolling baseline
+  rbuf[ri] = rms;
+  ri = (ri + 1) % RBUF;
+  let bsum = 0;
+  for (let i = 0; i < RBUF; i++) bsum += rbuf[i];
+  const baseline = bsum / RBUF;
+
+  // Trigger: must exceed absolute threshold AND be 4× louder than baseline
+  if (armed && rms > +sensSlider.value && rms > baseline * 4.0) {
+    armed = false;
+    triggerCountdown();
+    return;
+  }
+
+  raf = requestAnimationFrame(listenLoop);
+}
+
+function drawWave(data, len) {
+  const w = waveCanvas.width, h = waveCanvas.height;
+
+  // Background
+  wCtx.fillStyle = '#161616';
+  wCtx.fillRect(0, 0, w, h);
+
+  // Centre line
+  wCtx.strokeStyle = '#242220';
+  wCtx.lineWidth   = 1;
+  wCtx.beginPath();
+  wCtx.moveTo(0, h / 2); wCtx.lineTo(w, h / 2);
+  wCtx.stroke();
+
+  // Waveform
+  wCtx.strokeStyle = '#e89420';
+  wCtx.lineWidth   = 1.5;
+  wCtx.lineJoin    = 'round';
+  wCtx.beginPath();
+  const step = w / len;
+  for (let i = 0; i < len; i++) {
+    const x = i * step;
+    const y = ((data[i] - 128) / 128) * (h * 0.43) + h / 2;
+    i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+}
+
+// ── Peak → Countdown ──────────────────────────────────────────────────────────
+function triggerCountdown() {
+  camFlash();       // ← the signature moment
+  stopMic();
+  go(S.COUNT);
+  countdown = Date.now() + DUR * 1000;
+  raf = requestAnimationFrame(tick);
+}
+
+function tick() {
+  if (state !== S.COUNT) return;
+
+  const ms   = Math.max(0, countdown - Date.now());
+  const secs = Math.ceil(ms / 1000);
+
+  timeText.textContent = fmt(secs);
+  setRing(ms / (DUR * 1000));
+
+  // Urgency mode: last 10 seconds
+  if (secs <= 10) {
+    progRing.style.stroke = '#e84040';
+    timeText.setAttribute('fill', '#e84040');
+    if (!ringsvg.classList.contains('ring-urgent')) {
+      ringsvg.classList.add('ring-urgent');
+    }
+  }
+
+  if (ms <= 0) {
+    go(S.DONE);
+    buzz();
+    return;
+  }
+
+  raf = requestAnimationFrame(tick);
+}
+
+// ── Buzz sound ────────────────────────────────────────────────────────────────
+function buzz() {
+  if (!actx) return;
+  const t = actx.currentTime;
+  // Three square-wave beeps: 880 · 880 · 1108 Hz
+  [[0, 880, 0.22], [0.30, 880, 0.22], [0.60, 1108, 0.32]].forEach(([dt, hz, dur]) => {
+    const osc = actx.createOscillator();
+    const gn  = actx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = hz;
+    gn.gain.setValueAtTime(0.22, t + dt);
+    gn.gain.exponentialRampToValueAtTime(0.001, t + dt + dur);
+    osc.connect(gn);
+    gn.connect(actx.destination);
+    osc.start(t + dt);
+    osc.stop(t + dt + dur + 0.01);
+  });
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+go(S.IDLE);
+</script>
+</body>
+</html>
