@@ -222,6 +222,8 @@ h1,h2,h3{font-family:var(--font-display); margin:0;}
 .piles-row{display:flex; align-items:flex-end; justify-content:center; gap:2.2rem; margin-top:.2rem;}
 .pile{display:flex; flex-direction:column; align-items:center; gap:.35rem;}
 .pile .lbl{font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; opacity:.75;}
+.deck-note{font-size:.62rem; opacity:.55; margin-top:.15rem; white-space:nowrap;}
+.settings-info{font-family:var(--font-mono); font-size:.82rem; opacity:.65;}
 .pile-stack{position:relative; width:clamp(58px,16vw,78px); aspect-ratio:5/7;}
 .pile-stack .card{position:absolute; inset:0;}
 .pile-stack .card:nth-child(1){transform:translate(2px,2px);}
@@ -361,6 +363,7 @@ h1,h2,h3{font-family:var(--font-display); margin:0;}
 @keyframes confettiFall{to{transform:translateY(115vh) rotate(540deg); opacity:.4;}}
 
 .small-note{font-size:.72rem; opacity:.65; text-align:center; max-width:24em;}
+.deck-badge{display:inline-flex; align-items:center; gap:.35rem; font-family:var(--font-mono); font-size:.72rem; background:rgba(212,175,55,.15); border:1px solid rgba(212,175,55,.4); color:var(--gold-light); padding:.32em .75em; border-radius:999px; margin-top:.55rem;}
 </style>
 </head>
 <body>
@@ -618,9 +621,12 @@ function runningTotal(pid){
 }
 
 /* ============================= GAME FLOW ============================= */
+function decksInPlay(){
+  return STATE.cardsPerPlayer > 6 ? 2 : 1;
+}
 function dealHole(){
   clearSwitchTimers();
-  var numDecks = STATE.cardsPerPlayer > 6 ? 2 : 1;
+  var numDecks = decksInPlay();
   var deck = shuffle(buildDeck(numDecks));
   STATE.grids = {};
   for(var i=0;i<STATE.players.length;i++){
@@ -898,6 +904,7 @@ function pileMarkup(){
   else { html += '<div class="empty-slot">Empty</div>'; }
   html += '</div>';
   html += '<div class="lbl">Stock</div><div class="pile-count">'+stockCount+' left</div>';
+  if(decksInPlay()>1){ html += '<div class="deck-note">'+decksInPlay()+' decks in play</div>'; }
   html += '</div>';
 
   html += '<div class="pile">';
@@ -1005,6 +1012,7 @@ function renderSetupScreen(){
   html += '<button class="'+(STATE.cardsPerPlayer===9?'active':'')+'" data-action="set-variant" data-cards="9">9-Card</button>';
   html += '</div>';
   html += '<div class="small-note" style="margin-top:.5rem;">'+(STATE.cardsPerPlayer===9 ? '9 cards each in a 3\u00d73 grid.' : '6 cards each in a 2\u00d73 grid.')+'</div>';
+  html += '<div class="deck-badge">\uD83C\uDCCF '+decksInPlay()+' deck'+(decksInPlay()>1?'s':'')+' shuffled together ('+(decksInPlay()*52)+' cards)'+(decksInPlay()>1?' \u2014 duplicates in play':'')+'</div>';
   html += '</div>';
 
   html += '<div class="card-panel">';
@@ -1225,6 +1233,7 @@ function renderSettingsModal(){
   var html = '<div class="modal-overlay" data-action="close-modal-bg"><div class="modal-box" data-action="">';
   html += '<button class="btn icon ghost close-x" data-action="close-modal">\u2715</button>';
   html += '<h2>Settings</h2>';
+  html += '<div class="toggle-row"><b>Variant</b><span class="settings-info">'+STATE.cardsPerPlayer+'-Card \u00b7 '+decksInPlay()+' deck'+(decksInPlay()>1?'s':'')+' ('+(decksInPlay()*52)+' cards)</span></div>';
   html += '<div class="toggle-row"><b>Sound</b><button class="switch '+(STATE.soundOn?'on':'')+'" data-action="toggle-sound"><span class="knob"></span></button></div>';
   html += '<div class="toggle-row"><b>Pass-device screens</b><button class="switch '+(STATE.passDeviceEnabled?'on':'')+'" data-action="toggle-pass-device"><span class="knob"></span></button></div>';
   html += '<div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem;">';
