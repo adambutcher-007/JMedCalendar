@@ -282,7 +282,7 @@ h1,h2,h3{font-family:var(--font-display); margin:0;}
 
 /* ---- TABLE VIEW ---- */
 .table-viewport{position:absolute; inset:0; touch-action:none; overflow:hidden;}
-.table-inner{position:absolute; top:50%; left:50%; width:1200px; height:800px; margin:-400px 0 0 -600px; transform-origin:center center;}
+.table-inner{position:absolute; top:50%; left:50%; transform-origin:center center;}
 .table-felt{
   position:absolute; inset:30px; border-radius:50%/40%;
   background:radial-gradient(circle at 50% 40%, var(--felt-light), var(--felt) 60%, var(--felt-dark) 100%);
@@ -291,7 +291,7 @@ h1,h2,h3{font-family:var(--font-display); margin:0;}
 .center-piles{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; gap:2.2rem; align-items:center;}
 .center-piles .pile-stack{width:78px;}
 .table-mat{
-  position:absolute; width:250px; transform:translate(-50%,-50%);
+  position:absolute; transform:translate(-50%,-50%);
   border-radius:var(--radius); border:4px solid var(--pc); background:rgba(0,0,0,.28);
   box-shadow:0 0 0 3px rgba(0,0,0,.2), var(--shadow);
   padding:.6rem; cursor:pointer;
@@ -520,10 +520,13 @@ var RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 var SUITS = ['S','H','D','C'];
 var SUIT_SYMBOL = {S:'\u2660', H:'\u2665', D:'\u2666', C:'\u2663'};
 
-function buildDeck(){
+function buildDeck(numDecks){
+  numDecks = numDecks || 1;
   var deck = [];
-  for(var s=0;s<SUITS.length;s++){
-    for(var r=0;r<RANKS.length;r++){ deck.push(RANKS[r]+SUITS[s]); }
+  for(var d=0; d<numDecks; d++){
+    for(var s=0;s<SUITS.length;s++){
+      for(var r=0;r<RANKS.length;r++){ deck.push(RANKS[r]+SUITS[s]); }
+    }
   }
   return deck;
 }
@@ -542,14 +545,22 @@ function cardValue(rank){
   if(rank==='J'||rank==='Q') return 10;
   return parseInt(rank,10);
 }
+// Columns run top-to-bottom in each of the 3 across positions, regardless of
+// whether a hand has 6 cards (2 rows) or 9 cards (3 rows).
+function columnsFor(cardCount){
+  var cols = [[],[],[]];
+  for(var i=0;i<cardCount;i++){ cols[i%3].push(i); }
+  return cols;
+}
 function scoreGrid(grid){
-  var pairs = [[0,3],[1,4],[2,5]];
+  var cols = columnsFor(grid.length);
   var total = 0, matched = [];
-  for(var i=0;i<pairs.length;i++){
-    var a = grid[pairs[i][0]], b = grid[pairs[i][1]];
-    if(rankOf(a.code) === rankOf(b.code)){ matched.push(i); }
-    else { total += cardValue(rankOf(a.code)) + cardValue(rankOf(b.code)); }
-  }
+  cols.forEach(function(idxs, ci){
+    var ranks = idxs.map(function(i){ return rankOf(grid[i].code); });
+    var allMatch = ranks.every(function(r){ return r === ranks[0]; });
+    if(allMatch){ matched.push(ci); }
+    else { idxs.forEach(function(i){ total += cardValue(rankOf(grid[i].code)); }); }
+  });
   return {total:total, matched:matched};
 }
 
@@ -563,6 +574,7 @@ function defaultState(){
       {name:'', colorKey:'red'},
       {name:'', colorKey:'blue'}
     ],
+    cardsPerPlayer:9, // 6 or 9 -- which golf variant
     holesTotal:9,
     passDeviceEnabled:true,
     soundOn:true,
@@ -608,11 +620,12 @@ function runningTotal(pid){
 /* ============================= GAME FLOW ============================= */
 function dealHole(){
   clearSwitchTimers();
-  var deck = shuffle(buildDeck());
+  var numDecks = STATE.cardsPerPlayer > 6 ? 2 : 1;
+  var deck = shuffle(buildDeck(numDecks));
   STATE.grids = {};
   for(var i=0;i<STATE.players.length;i++){
     var p = STATE.players[i];
-    var cards = deck.splice(0,6);
+    var cards = deck.splice(0, STATE.cardsPerPlayer);
     STATE.grids[p.id] = cards.map(function(c){ return {code:c, faceUp:false}; });
   }
   var starter = deck.splice(0,1)[0];
@@ -857,7 +870,7 @@ function renderGrid(pid, opts){
   var isPending = !!STATE.drawnCard && opts.interactive;
   var isFlipChoosing = !STATE.drawnCard && STATE.flipMode && opts.interactive;
   var html = '<div class="grid-3x2 '+(opts.small?'':'focus')+'">';
-  for(var i=0;i<6;i++){
+  for(var i=0;i<grid.length;i++){
     var slot = grid[i];
     var classes = ['slot'];
     if(isPending || (isFlipChoosing && !slot.faceUp)) classes.push('targetable');
@@ -983,6 +996,15 @@ function renderSetupScreen(){
       html += '</div>';
     }
   });
+  html += '</div>';
+
+  html += '<div class="card-panel">';
+  html += '<h2>Golf Variant</h2>';
+  html += '<div class="segmented">';
+  html += '<button class="'+(STATE.cardsPerPlayer===6?'active':'')+'" data-action="set-variant" data-cards="6">6-Card</button>';
+  html += '<button class="'+(STATE.cardsPerPlayer===9?'active':'')+'" data-action="set-variant" data-cards="9">9-Card</button>';
+  html += '</div>';
+  html += '<div class="small-note" style="margin-top:.5rem;">'+(STATE.cardsPerPlayer===9 ? '9 cards each in a 3\u00d73 grid.' : '6 cards each in a 2\u00d73 grid.')+'</div>';
   html += '</div>';
 
   html += '<div class="card-panel">';
@@ -1123,22 +1145,37 @@ function renderReadonlyView(pid){
   return html;
 }
 
+// Shared layout constants for the table view, so the render and the
+// pan/zoom fit-scale calculation always agree on the canvas size. 9-card
+// hands are a row taller, so they get a taller canvas and more vertical
+// spread between mats to avoid overlap, plus slightly smaller cards.
+function tableGeometry(){
+  var nine = STATE.cardsPerPlayer > 6;
+  return {
+    canvasW: 1200,
+    canvasH: nine ? 1000 : 800,
+    rx: 430,
+    ry: nine ? 350 : 270,
+    matW: nine ? 225 : 250
+  };
+}
+
 function renderTableView(){
   var n = STATE.players.length;
+  var geo = tableGeometry();
   var html = '<div class="table-viewport" id="tableViewport">';
-  html += '<div class="table-inner" id="tableInner">';
+  html += '<div class="table-inner" id="tableInner" style="width:'+geo.canvasW+'px;height:'+geo.canvasH+'px;margin:'+(-geo.canvasH/2)+'px 0 0 '+(-geo.canvasW/2)+'px;">';
   html += '<div class="table-felt"></div>';
   html += '<div class="center-piles">' + pileMarkupSmall() + '</div>';
 
   STATE.players.forEach(function(p, i){
     var angle = (360/n)*i - 90;
     var rad = angle*Math.PI/180;
-    var rx = 430, ry = 270;
-    var x = 50 + (rx/1200*100)*Math.cos(rad);
-    var y = 50 + (ry/800*100)*Math.sin(rad);
+    var x = 50 + (geo.rx/geo.canvasW*100)*Math.cos(rad);
+    var y = 50 + (geo.ry/geo.canvasH*100)*Math.sin(rad);
     var hex = colorHex(p.colorKey);
     var isCur = p.id===currentPlayer().id;
-    html += '<div class="table-mat '+(isCur?'current':'')+'" style="--pc:'+hex+'; left:'+x+'%; top:'+y+'%;" data-action="select-avatar" data-player="'+p.id+'">';
+    html += '<div class="table-mat '+(isCur?'current':'')+'" style="--pc:'+hex+'; left:'+x+'%; top:'+y+'%; width:'+geo.matW+'px;" data-action="select-avatar" data-player="'+p.id+'">';
     html += '<div class="mat-header"><span class="name">'+esc(p.name)+'</span><span class="total">'+runningTotal(p.id)+'</span></div>';
     html += renderGrid(p.id, {interactive:false, small:true});
     html += '</div>';
@@ -1197,14 +1234,17 @@ function renderSettingsModal(){
   return html;
 }
 function renderRulesModal(){
+  var n = STATE.cardsPerPlayer || 9;
+  var rows = n/3;
   var html = '<div class="modal-overlay" data-action="close-modal-bg"><div class="modal-box" data-action="">';
   html += '<button class="btn icon ghost close-x" data-action="close-modal">\u2715</button>';
   html += '<h2>How to Play Golf</h2>';
   html += '<div class="rules-body">'+
-    '<p>Each player has 6 cards dealt face-down in a 2\u00d73 grid. Lowest total score after all holes wins.</p>'+
-    '<h3>Card values</h3><ul><li>Ace = 1, 2\u201310 = face value</li><li>Jack &amp; Queen = 10</li><li>King = 0</li><li>Two matching ranks stacked in the same column = 0 for that column</li></ul>'+
-    '<h3>On your turn, choose one</h3><ul><li><b>Flip a card:</b> turn one of your own face-down cards face-up in place \u2014 it stays right where it is</li><li><b>Draw the Stock:</b> take the top card, then swap it into one of your 6 cards or discard it instead</li><li><b>Take the Discard:</b> take the top discard card and swap it into one of your 6 cards (no discarding it back)</li></ul>'+
+    '<p>Each player has '+n+' cards dealt face-down in a '+rows+'\u00d73 grid. Lowest total score after all holes wins.</p>'+
+    '<h3>Card values</h3><ul><li>Ace = 1, 2\u201310 = face value</li><li>Jack &amp; Queen = 10</li><li>King = 0</li><li>A column where every card matches (all '+rows+') scores 0 for that column</li></ul>'+
+    '<h3>On your turn, choose one</h3><ul><li><b>Flip a card:</b> turn one of your own face-down cards face-up in place \u2014 it stays right where it is</li><li><b>Draw the Stock:</b> take the top card, then swap it into one of your cards or discard it instead</li><li><b>Take the Discard:</b> take the top discard card and swap it into one of your cards (no discarding it back)</li></ul>'+
     '<h3>End of a hole</h3><p>When the Stock pile runs out, everyone reveals all cards and totals up their score.</p>'+
+    '<h3>Variant</h3><p>6-Card Golf uses one deck. 9-Card Golf deals more cards per hand, so it shuffles two decks together. Pick your variant on the setup screen.</p>'+
   '</div></div></div>';
   return html;
 }
@@ -1307,8 +1347,9 @@ var panCaptured = false;
 function initTableTransform(){
   var viewport = document.getElementById('tableViewport');
   if(!viewport) return;
+  var geo = tableGeometry();
   var rect = viewport.getBoundingClientRect();
-  pz.fitScale = Math.min(rect.width/1200, rect.height/800) * 0.95;
+  pz.fitScale = Math.min(rect.width/geo.canvasW, rect.height/geo.canvasH) * 0.95;
   pz.scale = pz.fitScale; pz.x = 0; pz.y = 0;
   applyTableTransform();
 
@@ -1428,6 +1469,9 @@ document.addEventListener('click', function(e){
     render();
   } else if(action==='set-holes'){
     STATE.holesTotal = parseInt(target.getAttribute('data-holes'),10);
+    render();
+  } else if(action==='set-variant'){
+    STATE.cardsPerPlayer = parseInt(target.getAttribute('data-cards'),10);
     render();
   } else if(action==='toggle-pass-device'){
     STATE.passDeviceEnabled = !STATE.passDeviceEnabled; render();
